@@ -29,7 +29,6 @@ public class StallController {
     @RequestMapping("/up")
     public Result upStall(StallVo stallVo){
         int i = stallService.upStall(stallVo);
-
         return new Result();
     }
 

@@ -1,6 +1,7 @@
 package com.woniu.controller;
 
-
+import com.woniu.util.DateUtil;
+import org.springframework.web.bind.annotation.RequestMapping;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.woniu.mapper.StallMapper;
 import com.woniu.model.Plot;
@@ -16,7 +17,9 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -39,31 +42,24 @@ public class StallController {
 
     /**
      * 新增车位信息
-     * @param createStallVo
+     * @param stallVo
      * @return
      */
     @RequestMapping("createStall")
-    public Result createStall(@RequestBody CreateStallVo createStallVo){
-        System.out.println(createStallVo.getPlotName()+"------------------------------");
-        QueryWrapper<Plot> wrapper = new QueryWrapper<>();
-        wrapper.eq("plot_name",createStallVo.getPlotName());
-        Plot plot = plotService.getOne(wrapper);
-        Stall t = new Stall();
-        t.setAddress(createStallVo.getAddress());
-        t.setPropertyNum(createStallVo.getPropertyNum());
-        t.setParkingLotNo(createStallVo.getParkingLotNo());
-        t.setPlotId(plot.getPlotId());
-        boolean save = stallService.save(t);
-        return new Result(save);
+    public Result createStall(@RequestBody StallVo stallVo){
+
+        boolean b = stallService.addCheck(stallVo);
+
+        return new Result(b);
     }
 
     /**
      * 根据用户id查询所有车位信息
      * @return
      */
-    @RequestMapping("getStalls")
-    public Result getStalls(Integer userId){
-        List stallVos = stallService.getStallVos(userId);
+    @RequestMapping("getStalls/{letterId}")
+    public Result getStalls(@PathVariable Integer letterId){
+        List stallVos = stallService.getStallVos(letterId);
         if (!ObjectUtils.isEmpty(stallVos)){
             return new Result(stallVos);
         }
@@ -78,7 +74,7 @@ public class StallController {
      */
     @RequestMapping("deletStall/{parkingLotNo}")
     public Result deletStall(@PathVariable Integer parkingLotNo){
-        System.out.println(parkingLotNo+"---------------------------");
+
         QueryWrapper<Stall> wrapper = new QueryWrapper<>();
         wrapper.eq("parking_lot_no",parkingLotNo);
         boolean remove = stallService.remove(wrapper);
@@ -92,11 +88,11 @@ public class StallController {
      */
     @RequestMapping("getStall/{parkingLotNo}")
     public Result getStall(@PathVariable Integer parkingLotNo){
-        System.out.println(parkingLotNo+"-----------------------------");
+
         QueryWrapper<Stall> wrapper = new QueryWrapper<>();
         wrapper.eq("parking_lot_no",parkingLotNo);
         Stall one = stallService.getOne(wrapper);
-        System.out.println(one+"**************************");
+
         if (one==null){
             return new Result(false);
         }
@@ -111,13 +107,110 @@ public class StallController {
      */
     @RequestMapping("checkStall")
     public Result checkStall(@RequestBody StallVo stallVo){
-        stallVo.setLetterId(1);
-        System.out.println(stallVo);
+
+
         stallService.insertcheck(stallVo);
 
         return new Result(true);
     }
 
+    /**
+     * 获取待审核车位信息（用于平台方审核车位上架信息）
+     * @return
+     */
+    @RequestMapping("getCheckStalls")
+    public Result getCheckStall(Integer stallId){
+        List<StallVo> checkStalls = stallService.getCheckStalls();
+        return new Result(checkStalls);
+    }
+    /**
+     * 修改审核车位状态为2
+     * @return
+     */
+    @RequestMapping("updateCheckStallStatuTo2")
+    public void updateCheckStallStatuTo2(@RequestBody StallVo stallVo){
+        stallService.updateCheckStallStatuTo2(stallVo.getStallId());
+        QueryWrapper<Stall> wrapper = new QueryWrapper<>();
+        wrapper.eq("stall_id",stallVo.getStallId());
+        Stall stall = stallService.getOne(wrapper);
+        stall.setStatus(2);
+        stallService.update(stall,wrapper);
+        Date date = DateUtil.stringToDate(stallVo.getUpstallTime());
+        stallVo.setDate(date );
+        stallService.addPutAway(stallVo);
+
+
+    }
+    /**
+     * 修改审核车位状态为3
+     * @return
+     */
+    @RequestMapping("updateCheckStallStatuTo3/{stallId}")
+    public void updateCheckStallStatuTo3(@PathVariable Integer stallId){
+        stallService.updateCheckStallStatusTo3(stallId);
+    }
+
+    /**
+     * 上架方法
+     * @param stallVo
+     * @return
+     */
+    @RequestMapping("up")
+    public Result upStall(@RequestBody StallVo stallVo){
+        System.out.println(stallVo);
+        int i = stallService.upStall(stallVo);
+
+        return new Result();
+    }
+
+    /**
+     * 获取待审核的全部车位信息
+     * @return
+     */
+    @RequestMapping("getCheck")
+    public Result getCheck(){
+        List<StallVo> checks = stallService.getChecks();
+        return new Result(checks);
+    };
+
+    /**
+     * 审核通过后向mysql存数据
+     * @param stallVo
+     * @return
+     */
+    @RequestMapping("addStall")
+    public Result addStall(@RequestBody StallVo stallVo){
+        QueryWrapper<Plot> wrapper = new QueryWrapper<>();
+        wrapper.eq("plot_name",stallVo.getPlotName());
+        Plot plot = plotService.getOne(wrapper);
+        Stall stall = new Stall();
+        stall.setPlotId(plot.getPlotId());
+        stall.setPropertyNum(stallVo.getPropertyNum());
+        stall.setParkingLotNo(stallVo.getParkingLotNo());
+        stall.setAddress(plot.getPlotAddress());
+        stall.setUserId(stallVo.getLetterId());
+        boolean save = stallService.save(stall);
+        return new Result(save);
+    };
+
+    /**
+     * 审核车位信息失败后删除该车位在redis中的待审核信息
+     * @param parkingLotNo
+     */
+    @RequestMapping("deleteCheck/{parkingLotNo}")
+    public void deleteCheck(@PathVariable Integer parkingLotNo){
+        stallService.deleteCheck(parkingLotNo);
+    }
+
+    /**
+     * 根据出租客id查询所有已上架车位信息
+     * @return
+     */
+    @RequestMapping
+    public Result getPutAways(){
+
+     return  new Result();
+    }
 
 }
 

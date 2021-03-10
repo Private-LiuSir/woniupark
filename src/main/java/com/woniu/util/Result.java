@@ -21,6 +21,12 @@ public class Result<T> {
         this.code=2000;
         this.data=data;
     }
+    public Result(String message){
+        this.message=message;
+        this.flag=true;
+        this.code=2000;
+        this.data=null;
+    }
 
     public Result(boolean flag){
         this.flag=flag;

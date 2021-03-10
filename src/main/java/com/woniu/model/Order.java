@@ -55,6 +55,9 @@ public class Order implements Serializable {
     @ApiModelProperty(value = "订单的单价")
     private BigDecimal price;
 
+    @ApiModelProperty(value = "订单的评分")
+    private Integer rate;
+
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
     private Date gmtCreate;
@@ -62,6 +65,7 @@ public class Order implements Serializable {
     @ApiModelProperty(value = "订单结算时间")
     private Date statementTime;
     @ApiModelProperty(value = "修改时间")
+    @TableField(fill=FieldFill.INSERT_UPDATE)
     private Date gmtModifified;
 
     @ApiModelProperty(value = "版本号")

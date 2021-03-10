@@ -4,6 +4,7 @@ import com.woniu.model.Stall;
 import com.woniu.mapper.StallMapper;
 import com.woniu.service.StallService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.woniu.util.DateUtil;
 import com.woniu.vo.StallVo;
 import net.sf.jsqlparser.expression.DoubleValue;
 import org.springframework.data.redis.core.HashOperations;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>
@@ -33,7 +35,6 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
-
     //后台执行上架的方法
     @Override
     public int upStall(StallVo stallVo) {
@@ -41,7 +42,7 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
         //获取操作Hash的工具
         HashOperations<String, Object, Object> hashOperations = stringRedisTemplate.opsForHash();
         //查询当前车位是否已经上架是否已经上架
-        Boolean hasKey = stringRedisTemplate.hasKey("woniupark:letter:"+stallVo.getStall_id());
+        Boolean hasKey = stringRedisTemplate.hasKey("woniupark:letter:"+stallVo.getStallId());
         //判断是否上架
         if(hasKey){
             //已经上架   不再进行上架处理
@@ -50,25 +51,28 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
             HashMap<String, String> hashMap = new HashMap<>();
             //往集合中添加数据
             hashMap.put("地址",stallVo.getAddress());
-            hashMap.put("小区名",stallVo.getPlot_name());
-            hashMap.put("小区ID",stallVo.getPlot_Id().toString());
-            hashMap.put("出租方ID",stallVo.getLetter_Id().toString());
+            hashMap.put("小区名",stallVo.getPlotName());
+            hashMap.put("小区ID",stallVo.getPlotId().toString());
+            hashMap.put("出租方ID",stallVo.getLetterId().toString());
             hashMap.put("单价",stallVo.getPrice().toString());
-            hashMap.put("车位号",stallVo.getParking_lot_no().toString());
-            hashMap.put("上架时长",stallVo.getShelf_time().toString());
+            hashMap.put("车位号",stallVo.getParkingLotNo().toString());
+            hashMap.put("上架时长",stallVo.getShelfTime().toString());
+            hashMap.put("车位状态","1");
             //系统生成时间戳  转换为字符串存入
             long timeMillis = System.currentTimeMillis();
             //转换为时间
             Date date = new Date(timeMillis);
             //获取时间格式
-            String toLocaleString = date.toLocaleString();
-            hashMap.put("上架时间",toLocaleString);
-            hashOperations.putAll("woniupark:letter:"+stallVo.getStall_id(),hashMap);
+            String toLocaleString = DateUtil.dateToString(date);
 
+            hashMap.put("上架时间",toLocaleString);
+            hashOperations.putAll("woniupark:letter:"+stallVo.getStallId(),hashMap);
+            //设置有效期
+            stringRedisTemplate.expire("woniupark:letter:"+stallVo.getStallId(),stallVo.getShelfTime(), TimeUnit.HOURS);
             //上架完成数据后  把上架了的车位ID存到上架ID集合中
             ListOperations<String, String> listOperations = stringRedisTemplate.opsForList();
             //将新增的车位ID添加到集合中
-            listOperations.rightPush("woniupark:already-shelves",stallVo.getStall_id().toString());
+            listOperations.rightPush("woniupark:already-shelves",stallVo.getStallId().toString());
         }
         return 0;
     }
@@ -89,14 +93,15 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
             StallVo stallVo = new StallVo();
             //从redis读取数据并且赋值
             stallVo.setAddress(hashOperations.get("woniupark:letter:"+id,"地址").toString());
-            stallVo.setPlot_name(hashOperations.get("woniupark:letter:"+id,"小区名").toString());
-            stallVo.setPlot_Id(Integer.valueOf(hashOperations.get("woniupark:letter:"+id,"小区ID").toString()));
-            stallVo.setLetter_Id(Integer.valueOf(hashOperations.get("woniupark:letter:"+id,"出租方ID").toString()));
+            stallVo.setPlotName(hashOperations.get("woniupark:letter:"+id,"小区名").toString());
+            stallVo.setPlotId(Integer.valueOf(hashOperations.get("woniupark:letter:"+id,"小区ID").toString()));
+            stallVo.setLetterId(Integer.valueOf(hashOperations.get("woniupark:letter:"+id,"出租方ID").toString()));
             stallVo.setPrice(Double.valueOf(hashOperations.get("woniupark:letter:"+id,"单价").toString()));
-            stallVo.setParking_lot_no(Integer.valueOf(hashOperations.get("woniupark:letter:"+id,"车位号").toString()));
-            stallVo.setShelf_time(Integer.valueOf(hashOperations.get("woniupark:letter:"+id,"上架时长").toString()));
-            stallVo.setUpstall_time(hashOperations.get("woniupark:letter:"+id,"上架时间").toString());
-            stallVo.setStall_id(Integer.valueOf(id));
+            stallVo.setParkingLotNo(Integer.valueOf(hashOperations.get("woniupark:letter:"+id,"车位号").toString()));
+            stallVo.setShelfTime(Integer.valueOf(hashOperations.get("woniupark:letter:"+id,"上架时长").toString()));
+            stallVo.setUpStallTime(hashOperations.get("woniupark:letter:"+id,"上架时间").toString());
+            stallVo.setStallId(Integer.valueOf(id));
+            stallVo.setStallStatus(1);
             //添加到集合中
             stallVos.add(stallVo);
         });

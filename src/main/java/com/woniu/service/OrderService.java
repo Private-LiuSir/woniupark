@@ -4,6 +4,8 @@ import com.woniu.model.Order;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.woniu.vo.OrderVo;
 
+import java.math.BigDecimal;
+
 /**
  * <p>
  *  服务类
@@ -15,4 +17,8 @@ import com.woniu.vo.OrderVo;
 public interface OrderService extends IService<Order> {
 
     public int createOrder(OrderVo orderVo);
+
+    public OrderVo getOrderInfo(Integer orderId);
+
+    public BigDecimal statement(Integer orderId);
 }

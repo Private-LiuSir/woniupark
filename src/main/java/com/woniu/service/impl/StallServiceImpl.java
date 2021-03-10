@@ -14,6 +14,12 @@ import net.sf.jsqlparser.expression.DoubleValue;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import com.woniu.util.DateUtil;
+import com.woniu.vo.StallVo;
+import net.sf.jsqlparser.expression.DoubleValue;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.ListOperations;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -21,6 +27,13 @@ import javax.annotation.Resource;
 import java.io.Console;
 import java.util.Date;
 import java.util.List;
+
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -38,7 +51,6 @@ import java.util.List;
  */
 @Service
 public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements StallService {
-
     @Resource
     private StallMapper stallMapper;
     @Resource
@@ -49,6 +61,11 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
         List stallVos = stallMapper.getStallVos(userId);
         return stallVos;
     }
+
+
+
+
+
 
     /**
      * 审核车位信息失败后删除该车位在redis中的待审核信息

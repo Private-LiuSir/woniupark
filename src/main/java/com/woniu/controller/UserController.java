@@ -1,9 +1,15 @@
 package com.woniu.controller;
 
 
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.woniu.util.JWTutil;
+import com.woniu.util.Result;
+import org.springframework.http.HttpRequest;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * <p>
@@ -16,6 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/user")
 public class UserController {
+
+
 
 }
 

@@ -10,6 +10,9 @@ import java.util.List;
 import com.woniu.vo.StallVo;
 
 import java.util.List;
+import com.woniu.vo.StallVo;
+
+import java.util.List;
 
 /**
  * <p>
@@ -38,10 +41,10 @@ public interface StallService extends IService<Stall> {
      */
     public List<StallVo> findAllStall();
 
-    /**
-     * 将数据存入待上架审核车位信息redis
-     * @param stallVo
-     */
+
+
+
+
     Result insertcheck(StallVo stallVo);
 
     /**

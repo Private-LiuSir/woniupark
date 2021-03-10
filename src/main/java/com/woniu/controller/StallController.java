@@ -16,6 +16,13 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
+import com.woniu.service.StallService;
+import com.woniu.util.Result;
+import com.woniu.vo.StallVo;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import javax.annotation.Resource;
+import java.util.List;
 
 import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;

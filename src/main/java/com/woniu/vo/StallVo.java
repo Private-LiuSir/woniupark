@@ -24,6 +24,7 @@ public class StallVo {
     private Integer shelfTime;
     //上架的时间
     private String upstallTime;
+    private String upStallTime;
     //剩余可操作租用时间   该属性只在上架后存在
     private Integer leaveTime;
     //车位状态  上架后车位保存的值   1、上架(可进行抢租)   2、出租中(无法进行抢租)   3、未上架  4、

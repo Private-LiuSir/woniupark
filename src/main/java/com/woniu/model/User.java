@@ -33,7 +33,7 @@ public class User implements Serializable {
 
         @ApiModelProperty(value = "主键，并自增")
         @TableId(value = "user_id", type = IdType.AUTO)
-    private Integer userId;
+    private Integer userId=1;
 
         @ApiModelProperty(value = "昵称，注册时需输入")
         private String nickname;

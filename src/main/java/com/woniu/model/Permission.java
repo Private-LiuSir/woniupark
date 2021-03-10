@@ -48,5 +48,4 @@ public class Permission implements Serializable {
     @TableField(exist = false)
     private List<Permission> permission;
 
-
 }

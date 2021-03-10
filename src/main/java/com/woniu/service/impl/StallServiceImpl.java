@@ -62,11 +62,6 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
         return stallVos;
     }
 
-
-
-
-
-
     /**
      * 审核车位信息失败后删除该车位在redis中的待审核信息
      * @param parkingLotNo

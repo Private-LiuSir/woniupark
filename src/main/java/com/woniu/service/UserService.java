@@ -2,6 +2,7 @@ package com.woniu.service;
 
 import com.woniu.model.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.woniu.util.Result;
 
 /**
  * <p>
@@ -12,5 +13,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @since 2021-03-05
  */
 public interface UserService extends IService<User> {
+
+
 
 }

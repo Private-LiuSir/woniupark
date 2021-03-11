@@ -213,10 +213,17 @@ public class StallController {
      * 根据出租客id查询所有已上架车位信息
      * @return
      */
-    @RequestMapping
+    @RequestMapping("getputAways")
     public Result getPutAways(){
+        List<StallVo> stall = stallService.findStall();
 
-     return  new Result();
+        return  new Result(stall);
+    }
+    @RequestMapping("updatePutaway/{putawayId}")
+    public Result updatePutaway(@PathVariable Integer putawayId){
+        System.out.println(putawayId);
+        Integer integer = stallService.updatePutaway(putawayId);
+        return new Result(integer);
     }
 
 }

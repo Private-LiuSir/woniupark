@@ -6,6 +6,7 @@ import com.woniu.vo.CreateStallVo;
 import com.woniu.vo.StallVo;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
@@ -39,5 +40,20 @@ public interface StallMapper extends BaseMapper<Stall> {
     @Insert("insert into t_putaway(user_id,plot_id,stall_id,unit_price,shelf_time,upstall_time)" +
             "value(#{letterId},#{plotId},#{stallId},#{price},#{shelfTime},#{date})")
     Integer addPutAway(StallVo stallVo);
+
+    /**
+     * 查询所有车位状态
+     * @return
+     */
+    @Select("SELECT p.shelf_time,p.`status`,p.unit_price,p.upstall_time," +
+            "s.address,s.parking_lot_no,s.property_num,t.plot_name,p.putaway_id " +
+            "FROM t_putaway AS p " +
+            "JOIN  t_stall AS s " +
+            "ON p.stall_id=s.stall_id " +
+            "JOIN t_plot AS t " +
+            "ON s.plot_id=t.plot_id")
+    List<StallVo> findStall();
+    @Update("update t_putaway set status=2 where putaway_id=#{putawayId}")
+    Integer updatePutaway(Integer putawayId);
 
 }

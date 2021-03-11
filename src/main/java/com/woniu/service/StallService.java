@@ -88,7 +88,12 @@ public interface StallService extends IService<Stall> {
      */
     Integer addPutAway(StallVo stallVo);
 
+    /***
+     * 获取全部通过审核的车位信息
+     * @return
+     */
+    List<StallVo> findStall();
 
-
+    Integer updatePutaway(Integer putawayId);
 
 }

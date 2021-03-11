@@ -261,6 +261,21 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
         }
         return new Result(true);
     }
+
+    @Override
+    public Integer updatePutaway(Integer putawayId) {
+
+        Integer putaway = stallMapper.updatePutaway(putawayId);
+
+        return putaway;
+    }
+
+    @Override
+    public List<StallVo> findStall() {
+        List<StallVo> stall = stallMapper.findStall();
+        return stall;
+    }
+
     /***
      * 上架存入数据库
      * @param stallVo

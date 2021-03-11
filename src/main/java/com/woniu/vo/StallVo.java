@@ -25,7 +25,7 @@ public class StallVo {
 
     //上架时长，即出租客上架选择出租的时间  前台转换为小时
     private Integer shelfTime;
-    //上架的时间
+//    //上架的时间
     private String upstallTime;
 
     //单价   需要做精准处理BigDecimal
@@ -33,7 +33,9 @@ public class StallVo {
 
     //上架的时间
 
-    private String upStallTime;
+    //private Date upStallTime;
+
+
     //剩余可操作租用时间   该属性只在上架后存在
     private Integer leaveTime;
     //车位状态  上架后车位保存的值   1、上架(可进行抢租)   2、出租中(无法进行抢租)   3、未上架  4、
@@ -50,6 +52,10 @@ public class StallVo {
     private Integer propertyNum;
     //date类型上架时间
     private Date date;
+    //
+    private Double unitPrice;
+    //
+    private Integer putawayId;
 
 }
 

@@ -148,6 +148,7 @@
             <artifactId>lombok</artifactId>
         </dependency>
 <!--短信验证界面-->
+
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>

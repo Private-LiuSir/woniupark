@@ -91,14 +91,14 @@ public class UserController {
             //前端设置了选项框属性 为1就是用户 2就是租客
             if (userVo.getRadio().equals("1")) {
                 //给用赋予角色
-                userService.role(userdb.getUserId(), 6);
+                userService.role(userdb.getUserId(), 1);
                 //判断用户是否用了推荐码
                 if (!ObjectUtils.isEmpty(userVo.getReferral())) {
 
                     boll = true;
                 }
             } else {
-                userService.role(userdb.getUserId(), 5);
+                userService.role(userdb.getUserId(), 2);
 
             }
 
@@ -135,13 +135,13 @@ public class UserController {
                 }
             }
             if (save) {
-                return new Result(true, StatusCode.OK, "注册成功");
+                return new Result( "注册成功",true);
             }
-            return new Result(false, StatusCode.ERRORREGISTER, "注册失败");
+            return new Result("注册失败",false);
 
         } else {
             //如果返回1 代表redis没有查询到数据
-            return new Result(true, StatusCode.ERRORREGISTER, "验证码不正确");
+            return new Result( "验证码不正确",true);
         }
 
 
@@ -200,11 +200,11 @@ public class UserController {
                 tadd.setUser(userDB);
                 tadd.setRoleId(role.getRoleId());
                 System.out.println(tadd);
-                return new Result(true, StatusCode.OK, "登陆成功", tadd);
+                return new Result("登陆成功",true,0,tadd);
             }
-            return new Result(false, StatusCode.IncorrectCredentials, "凭证错误");
+            return new Result("凭证错误",false);
         }
-        return new Result(false, StatusCode.UnknownAccount, "该用户不存在");
+        return new Result("该用户不存在",false);
     }
 
     //电话登录
@@ -232,13 +232,13 @@ public class UserController {
                 tadd.setRoleId(role.getRoleId());
                 tadd.setUser(userDB);
 
-                return new Result(true, StatusCode.OK, "登陆成功", tadd);
+                return new Result( "登陆成功",true,0, tadd);
             }else{
-                    return new Result(true, StatusCode.UnknownAccount, "验证码不正确");
+                    return new Result( "验证码不正确",true);
                 }
 
         }
-        return new Result(false, StatusCode.UnknownAccount, "账号不存在");
+        return new Result("账号不存在",false);
     }
 
 
@@ -314,9 +314,9 @@ public class UserController {
             UpdateWrapper<User> wrapper = new UpdateWrapper<>();
             wrapper.eq("user_id",userid);
             userService.update(user,wrapper);
-            return new Result(true, StatusCode.OK,"修改成功");
+            return new Result("修改成功",true);
         }else {
-            return new Result(false, StatusCode.ERRORPAGE,"身份认证错误");
+            return new Result("身份认证错误",false);
         }
 
 

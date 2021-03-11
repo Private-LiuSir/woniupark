@@ -48,7 +48,7 @@ public class User implements Serializable {
         private String tel;
 
         @ApiModelProperty(value = "判断用户是否审核成功（默认为0）")
-        private int status;
+        private Integer status;
 
         @ApiModelProperty(value = "创建时间")
         @TableField(fill = FieldFill.INSERT)

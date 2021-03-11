@@ -1,31 +1,52 @@
 package com.woniu.util;
 
-import com.woniu.util.StatusCode;
 import lombok.Data;
 
 @Data
 public class Result<T> {
-    private Boolean flag;
-    private Integer code;
     private String message;
+    private Integer code;
+    private boolean flag;
     private T data;
 
-    public Result(Boolean flag, Integer code, String message, Object data) {
-        this.flag = flag;
-        this.code = code;
-        this.message = message;
-        this.data =(T)data;
+    public Result(){
+        this.message="请求成功";
+        this.flag=true;
+        this.code=2000;
     }
 
-    public Result(Boolean flag, Integer code, String message) {
-        this.flag = flag;
-        this.code = code;
-        this.message = message;
+    public Result(T data){
+        this.message="请求成功";
+        this.flag=true;
+        this.code=2000;
+        this.data=data;
+    }
+    public Result(String message){
+        this.message=message;
+        this.flag=true;
+        this.code=2000;
+        this.data=null;
     }
 
-    public Result() {
-        this.flag = true;
-        this.code = StatusCode.OK;
-        this.message = "操作成功";
+    public Result(boolean flag){
+        this.flag=flag;
+    }
+
+    public Result(String message, boolean flag){
+        this.message=message;
+        this.flag=flag;
+        this.code=5000;
+    }
+    public Result(String message, boolean flag,Integer code){
+        this.message=message;
+        this.flag=flag;
+        this.code=code;
+        this.data=null;
+    }
+    public Result(String message, boolean flag, Integer code, T data){
+        this.message=message;
+        this.flag=flag;
+        this.code=code;
+        this.data=data;
     }
 }

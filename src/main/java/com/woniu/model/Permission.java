@@ -1,10 +1,10 @@
 package com.woniu.model;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.Version;
-import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.*;
+
 import java.io.Serializable;
+import java.util.List;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -43,6 +43,12 @@ public class Permission implements Serializable {
 
     @ApiModelProperty(value = "父级菜单ID")
     private Integer pId;
+
+    //表示该字段数据库不存在
+    @TableField(exist = false)
+    private List<Permission> permission;
+
+
 
 
 }

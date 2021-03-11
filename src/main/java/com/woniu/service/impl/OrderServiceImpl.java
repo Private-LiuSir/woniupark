@@ -1,5 +1,6 @@
 package com.woniu.service.impl;
 
+import com.woniu.mapper.StallMapper;
 import com.woniu.mapper.UserInfoMapper;
 import com.woniu.model.Order;
 import com.woniu.mapper.OrderMapper;
@@ -10,6 +11,12 @@ import com.woniu.util.DateUtil;
 import com.woniu.vo.OrderVo;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.*;
+import com.woniu.vo.OrderVo;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.core.RedisOperations;
+import org.springframework.data.redis.core.SessionCallback;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -19,6 +26,13 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
+
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -41,89 +55,96 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     private OrderMapper orderMapper;
 
     @Resource
-    private UserInfoMapper userInfoMapper;
+    private StringRedisTemplate stringRedisTemplate;
+    //车位上架Mapper
+    @Resource
+    private StallMapper stallMapper;
 
     @Resource
-    private StringRedisTemplate stringRedisTemplate;
+    private UserInfoMapper userInfoMapper;
 
-    // 创建订单的方法
+    //创建订单的方法
     // 返回0表示已经被人抢租了
     // 返回值1表示下单成功
     // 返回2表示下单时卡顿导致锁过期，或者其他用户在过期期间抢租了该车位   可能需要重新刷新再下单（前端提示为刷新页面进行加载）
     @Override
     public int createOrder(OrderVo orderVo) {
-        //默认操作失败
         Integer execute=0;
         //根据前端传回的 stallID查询redis中是否有该车位的上架记录
         List<String> range = stringRedisTemplate.opsForList().range("woniupark:already-shelves", 0, -1);
         boolean contains = range.contains(orderVo.getStallId() + "");
 
-       // Boolean hasKey = stringRedisTemplate.hasKey("woniupark:letter:"+orderVo.getStallId());
+        Boolean hasKey = stringRedisTemplate.hasKey("woniupark:letter:"+orderVo.getStallId());
+        System.out.println(contains);
 
         //判断是否已上架
         if(contains){
-            //获取String的操作工具
-            ValueOperations<String, String> valueOperations = stringRedisTemplate.opsForValue();
-            //获取一个随机的uuid字符串作为锁的值  避免误删除
-            String lockValue = UUID.randomUUID().toString();
-
-            //已经上架  设置分布式锁  设置锁的生命周期为120秒  即两分钟
-            Boolean ifAbsent = valueOperations.setIfAbsent("woniupark:createOrder:" + orderVo.getStallId(), lockValue, 120, TimeUnit.SECONDS);
-
-            if(ifAbsent){
-                //创建一个SessionCallback对象  内部为事务代码
-                SessionCallback<Object> callback = new SessionCallback<Object>() {
-                    @Override
-                    public Object execute(RedisOperations operations) throws DataAccessException {
-                        //监听锁
-                        operations.watch("woniupark:createOrder:" + orderVo.getStallId());
-                        //开启事务
-                        operations.multi();
-                        //操作redis数据中的字段
-                        operations.opsForList().remove("woniupark:already-shelves",1,orderVo.getStallId().toString());
-                        List exec = operations.exec();
-                        //判断返回的集合是不是空的
-                        if(ObjectUtils.isEmpty(exec)){
-                            return 0;
+            if(hasKey){
+                //获取String的操作工具
+                ValueOperations<String, String> valueOperations = stringRedisTemplate.opsForValue();
+                //获取一个随机的uuid字符串作为锁的值  避免误删除
+                String lockValue = UUID.randomUUID().toString();
+                System.out.println(lockValue);
+                //已经上架  设置分布式锁  设置锁的生命周期为120秒  即两分钟
+                Boolean ifAbsent = valueOperations.setIfAbsent("woniupark:createOrder:" + orderVo.getStallId(), lockValue, 120, TimeUnit.SECONDS);
+                System.out.println(2);
+                if(ifAbsent){
+                    //创建一个SessionCallback对象  内部为事务代码
+                    SessionCallback<Object> callback = new SessionCallback<Object>() {
+                        @Override
+                        public Object execute(RedisOperations operations) throws DataAccessException {
+                            //监听锁
+                            operations.watch("woniupark:createOrder:" + orderVo.getStallId());
+                            //开启事务
+                            operations.multi();
+                            //操作redis数据中的字段
+                            operations.opsForList().remove("woniupark:already-shelves",1,orderVo.getStallId().toString());
+                            List exec = operations.exec();
+                            //判断返回的集合是不是空的
+                            if(ObjectUtils.isEmpty(exec)){
+                                return 0;
+                            }
+                            return 1;
                         }
-                        return 1;
-                    }
-                };
-                execute = (Integer)stringRedisTemplate.execute(callback);
+                    };
+                    execute = (Integer)stringRedisTemplate.execute(callback);
 
-            }
-            String  s=valueOperations.get("woniupark:createOrder:" + orderVo.getStallId()).toString();
-
-            if(ObjectUtils.isEmpty(s)){
-                //锁已经过期
-                return 2;
-            }
-            //判断是否为自己的锁
-            if(s.equals(lockValue)){
-                //是  删除该锁
-                stringRedisTemplate.delete("woniupark:createOrder:" + orderVo.getStallId());
-                //开始往数据库添加订单
-                Order order = new Order();
-                //设置用户ID
-                order.setUserId(orderVo.getUserId());
-                //设置小区ID
-                order.setPlotId(orderVo.getPlotId());
-                //设置车位ID
-                order.setStallId(orderVo.getStallId());
-                //设置出租方ID
-                order.setLetterId(orderVo.getLetterId());
-                //设置订单状态
-                order.setStatus(1);
-                //设置订单单价
-                order.setPrice(BigDecimal.valueOf(orderVo.getPrice()));
-                //订单的事件使用创建时间  自动生成  金额由结单后核算  结单时间结单时添加
-                int insert = orderMapper.insert(order);
-                return insert;
+                }
+                String  s=valueOperations.get("woniupark:createOrder:" + orderVo.getStallId()).toString();
+                System.out.println(s);
+                if(ObjectUtils.isEmpty(s)){
+                    //锁已经过期
+                    return 2;
+                }
+                //判断是否为自己的锁
+                if(s.equals(lockValue)){
+                    //是  删除该锁
+                    stringRedisTemplate.delete("woniupark:createOrder:" + orderVo.getStallId());
+                    //开始往数据库添加订单
+                    Order order = new Order();
+                    //设置用户ID
+                    order.setUserId(orderVo.getUserId());
+                    //设置小区ID
+                    order.setPlotId(orderVo.getPlotId());
+                    //设置车位ID
+                    order.setStallId(orderVo.getStallId());
+                    //设置出租方ID
+                    order.setLetterId(orderVo.getLetterId());
+                    //设置订单状态
+                    order.setStatus(1);
+                    //订单的事件使用创建时间  自动生成  金额由结单后核算  结单时间结单时添加
+                    int insert = orderMapper.insert(order);
+                    //修改上架标的车位状态
+                    stallMapper.getStall(order.getStallId());
+                    return insert;
+                }
+            }else{
+                //已经过期  删除上架list数据
+                stringRedisTemplate.opsForList().remove("woniupark:already-shelves",1,orderVo.getStallId());
             }
         }
         return execute;
     }
-
     //根据订单ID 返回订单详情
     @Override
     public OrderVo getOrderInfo(@RequestBody Integer orderId) {
@@ -243,6 +264,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                 //在上架集合中添加该车位的ID
                 System.out.println("车位剩余上架时间大于5小时，在上架集合中查询该车位ID");
                 stringRedisTemplate.opsForList().leftPush("woniupark:already-shelves",order.getStallId().toString());
+                //修改数据库的上架表的状态  1上架  2下架  3租用
+                stallMapper.reUpStall(order.getStallId());
+            }else {
+                stallMapper.downStall(order.getStallId());
             }
         }
         return total;

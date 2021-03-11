@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import java.io.Serializable;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.models.auth.In;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -56,6 +57,8 @@ public class Order implements Serializable {
 
     @ApiModelProperty(value = "订单的评分")
     private Integer rate;
+
+
 
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)

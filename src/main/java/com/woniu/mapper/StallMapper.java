@@ -2,7 +2,6 @@ package com.woniu.mapper;
 
 import com.woniu.model.Stall;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.woniu.vo.CreateStallVo;
 import com.woniu.vo.StallVo;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
@@ -53,6 +52,12 @@ public interface StallMapper extends BaseMapper<Stall> {
             "JOIN t_plot AS t " +
             "ON s.plot_id=t.plot_id")
     List<StallVo> findStall();
+
+    /**
+     * 下架车位方法（状态改为2）
+     * @param putawayId
+     * @return
+     */
     @Update("update t_putaway set status=2 where putaway_id=#{putawayId}")
     Integer updatePutaway(Integer putawayId);
 

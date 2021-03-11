@@ -1,45 +1,27 @@
 package com.woniu.service.impl;
 
+import com.woniu.model.CheckStall;
 import com.woniu.model.Stall;
 import com.woniu.mapper.StallMapper;
 import com.woniu.service.StallService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.woniu.util.DateUtil;
 import com.woniu.util.Result;
-import com.woniu.vo.CreateStallVo;
 import com.woniu.vo.StallVo;
+import com.woniu.vo.checkVo;
+import io.lettuce.core.GeoArgs;
+import jdk.nashorn.internal.ir.UnaryNode;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import com.woniu.vo.StallVo;
-import net.sf.jsqlparser.expression.DoubleValue;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.ListOperations;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import com.woniu.util.DateUtil;
-import com.woniu.vo.StallVo;
-import net.sf.jsqlparser.expression.DoubleValue;
-import org.springframework.data.redis.core.HashOperations;
-import org.springframework.data.redis.core.ListOperations;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
-
 import javax.annotation.Resource;
-import java.io.Console;
 import java.util.Date;
 import java.util.List;
-
-import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 
 /**
  * <p>
@@ -108,14 +90,14 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
 
     /**
      * 新增需要审核的车位信息
-     * @param stallVo
+     * @param checkStall
      */
     @Override
-    public boolean addCheck(StallVo stallVo) {
+    public boolean addCheck(CheckStall checkStall) {
         //获取操作Hash的工具
         HashOperations<String, Object, Object> hashOperations = stringRedisTemplate.opsForHash();
         //查询当前车位是否已经提交审核
-        Boolean hasKey = stringRedisTemplate.hasKey("woniupark:check:" + stallVo.getPropertyNum());
+        Boolean hasKey = stringRedisTemplate.hasKey("woniupark:check:" + checkStall.getPropertyNum());
         //判断是否已经提交过了
         if (hasKey) {
 
@@ -125,11 +107,11 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
             //创建一个hashmap 用于保存数据
             HashMap<String, String> hashMap = new HashMap<>();
             //往集合中添加数据
-            hashMap.put("地址", stallVo.getAddress());
-            hashMap.put("小区名", stallVo.getPlotName());
-            hashMap.put("出租方ID", stallVo.getLetterId().toString());
-            hashMap.put("车位号", stallVo.getParkingLotNo().toString());
-            hashMap.put("产权编号", stallVo.getPropertyNum().toString());
+            hashMap.put("地址", checkStall.getAddress());
+            hashMap.put("小区名", checkStall.getPlotName());
+            hashMap.put("出租方ID", checkStall.getUserId().toString());
+            hashMap.put("车位号", checkStall.getParkingLotNo().toString());
+            hashMap.put("产权编号", checkStall.getPropertyNum().toString());
             //系统生成时间戳  转换为字符串存入
             long timeMillis = System.currentTimeMillis();
             //转换为时间
@@ -137,12 +119,12 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
             //获取时间格式
             String string = DateUtil.dateToString(date);
             hashMap.put("提交时间", string);
-            hashOperations.putAll("woniupark:check:" + stallVo.getParkingLotNo(), hashMap);
+            hashOperations.putAll("woniupark:check:" + checkStall.getParkingLotNo(), hashMap);
 
             //提交完成数据后  把上架了的车位号存到上架ID集合中
             ListOperations<String, String> listOperations = stringRedisTemplate.opsForList();
             //将新增的车位号添加到集合中
-            listOperations.rightPush("woniupark:parkingLotNo", stallVo.getParkingLotNo().toString());
+            listOperations.rightPush("woniupark:parkingLotNo", checkStall.getParkingLotNo().toString());
         }
         return true;
     }

@@ -1,16 +1,16 @@
 package com.woniu.controller;
 
+import com.woniu.model.CheckPutaway;
+import com.woniu.model.CheckStall;
+import com.woniu.service.*;
 import com.woniu.util.DateUtil;
+import com.woniu.vo.*;
 import org.springframework.web.bind.annotation.RequestMapping;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.woniu.mapper.StallMapper;
 import com.woniu.model.Plot;
 import com.woniu.model.Stall;
-import com.woniu.service.PlotService;
-import com.woniu.service.StallService;
 import com.woniu.util.Result;
-import com.woniu.vo.CreateStallVo;
-import com.woniu.vo.StallVo;
 import org.springframework.boot.autoconfigure.cache.CacheProperties;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -46,16 +46,23 @@ public class StallController {
     private PlotService plotService;
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+    @Resource
+    private CheckStallService checkStallService;
+    @Resource
+    private CheckPutawayService checkPutawayService;
 
     /**
      * 新增车位信息
-     * @param stallVo
+     * @param check
      * @return
      */
     @RequestMapping("createStall")
-    public Result createStall(@RequestBody StallVo stallVo){
+    public Result createStall(@RequestBody CheckStall check){
+        //存入redis
+        boolean b = stallService.addCheck(check);
 
-        boolean b = stallService.addCheck(stallVo);
+        //存入mysql车位信息表
+        checkStallService.save(check);
 
         return new Result(b);
     }
@@ -115,8 +122,16 @@ public class StallController {
     @RequestMapping("checkStall")
     public Result checkStall(@RequestBody StallVo stallVo){
 
-
+        //redis
         stallService.insertcheck(stallVo);
+        //mysql
+        CheckPutaway checkPutaway = new CheckPutaway();
+        checkPutaway.setPlotId(stallVo.getPlotId());
+        checkPutaway.setUserId(stallVo.getLetterId());
+        checkPutaway.setShelfTime(stallVo.getShelfTime());
+        checkPutaway.setStallId(stallVo.getStallId());
+        checkPutaway.setUnitPrice(stallVo.getPrice());
+        checkPutawayService.save(checkPutaway);
 
         return new Result(true);
     }
@@ -136,15 +151,25 @@ public class StallController {
      */
     @RequestMapping("updateCheckStallStatuTo2")
     public void updateCheckStallStatuTo2(@RequestBody StallVo stallVo){
+
         stallService.updateCheckStallStatuTo2(stallVo.getStallId());
+        //修改车位表中的状态为2
         QueryWrapper<Stall> wrapper = new QueryWrapper<>();
         wrapper.eq("stall_id",stallVo.getStallId());
         Stall stall = stallService.getOne(wrapper);
         stall.setStatus(2);
         stallService.update(stall,wrapper);
+        //上架表
         Date date = DateUtil.stringToDate(stallVo.getUpstallTime());
         stallVo.setDate(date );
         stallService.addPutAway(stallVo);
+        //审核表
+        CheckPutaway checkPutaway = new CheckPutaway();
+        checkPutaway.setStatus(2);
+        checkPutaway.setCheckTime(new Date(System.currentTimeMillis()));
+        QueryWrapper<CheckPutaway> wrapper1 = new QueryWrapper<>();
+        wrapper1.eq("stall_id",stallVo.getStallId());
+        checkPutawayService.update(checkPutaway,wrapper1);
 
 
     }
@@ -152,9 +177,25 @@ public class StallController {
      * 修改审核车位状态为3
      * @return
      */
-    @RequestMapping("updateCheckStallStatuTo3/{stallId}")
-    public void updateCheckStallStatuTo3(@PathVariable Integer stallId){
-        stallService.updateCheckStallStatusTo3(stallId);
+    @RequestMapping("updateCheckStallStatuTo3")
+    public void updateCheckStallStatuTo3(@RequestBody CheckPutawayVo checkPutawayVo){
+        stallService.updateCheckStallStatusTo3(checkPutawayVo.getStallId());
+        //修改mysql车位表状态
+        QueryWrapper<Stall> wrapper1 = new QueryWrapper<>();
+        wrapper1.eq("stall_id",checkPutawayVo.getStallId());
+        Stall stall = new Stall();
+        stall.setStatus(3);
+        stallService.update(stall,wrapper1);
+
+        //修改mysql上架审核表数据
+        CheckPutaway checkPutaway = new CheckPutaway();
+        checkPutaway.setStatus(3);
+        checkPutaway.setCause(checkPutawayVo.getCause());
+        checkPutaway.setCheckTime(new Date(System.currentTimeMillis()));
+        QueryWrapper<CheckPutaway> wrapper = new QueryWrapper<>();
+        wrapper.eq("stall_id",checkPutawayVo.getStallId());
+        checkPutawayService.update(checkPutaway,wrapper);
+
     }
 
     /**
@@ -182,21 +223,30 @@ public class StallController {
 
     /**
      * 审核通过后向mysql存数据
-     * @param stallVo
+     * @param checkVo
      * @return
      */
     @RequestMapping("addStall")
-    public Result addStall(@RequestBody StallVo stallVo){
+    public Result addStall(@RequestBody checkVo checkVo){
         QueryWrapper<Plot> wrapper = new QueryWrapper<>();
-        wrapper.eq("plot_name",stallVo.getPlotName());
+        wrapper.eq("plot_name",checkVo.getPlotName());
+        //去小区表捞取数据填充车位对象
         Plot plot = plotService.getOne(wrapper);
         Stall stall = new Stall();
         stall.setPlotId(plot.getPlotId());
-        stall.setPropertyNum(stallVo.getPropertyNum());
-        stall.setParkingLotNo(stallVo.getParkingLotNo());
+        stall.setPropertyNum(checkVo.getPropertyNum());
+        stall.setParkingLotNo(checkVo.getParkingLotNo());
         stall.setAddress(plot.getPlotAddress());
-        stall.setUserId(stallVo.getLetterId());
+        stall.setUserId(checkVo.getLetterId());
+        //将车位对象填充入mysql车位表中
         boolean save = stallService.save(stall);
+        //将前端审核通过的数据存入审核车位（CheckStall）对象中
+        CheckStall checkStall = new CheckStall();
+        checkStall.setStatus(2);
+        checkStall.setCheckTime(new Date(System.currentTimeMillis()));
+        QueryWrapper<CheckStall> wrapper1 = new QueryWrapper<>();
+        wrapper1.eq("parking_lot_no",checkVo.getParkingLotNo());
+        checkStallService.update(checkStall,wrapper1);
         return new Result(save);
     };
 
@@ -219,6 +269,7 @@ public class StallController {
 
         return  new Result(stall);
     }
+
     @RequestMapping("updatePutaway/{putawayId}")
     public Result updatePutaway(@PathVariable Integer putawayId){
         System.out.println(putawayId);
@@ -231,6 +282,26 @@ public class StallController {
         List<StallVo> allStall = stallService.findAllStall();
         Result<List<StallVo>> listResult = new Result<>(allStall);
         return listResult;
+    }
+
+    /**
+     * 审核车位表的修改状态为3，添加审核建议
+     * @param checkVo
+     * @return
+     */
+    @RequestMapping("updateCheckStall")
+    public Result updateCheckStall(@RequestBody checkVo checkVo){
+        System.out.println(checkVo);
+        QueryWrapper<CheckStall> wrapper = new QueryWrapper<>();
+        wrapper.eq("parking_lot_no",checkVo.getParkingLotNo());
+        CheckStall checkStall = new CheckStall();
+        checkStall.setStatus(3);
+        checkStall.setCause(checkVo.getCause());
+        Date date = new Date(System.currentTimeMillis());
+        checkStall.setCheckTime(date);
+        boolean b = checkStallService.update(checkStall, wrapper);
+
+        return new Result(b);
     }
 
 }

@@ -1,18 +1,12 @@
 package com.woniu.service;
 
+import com.woniu.model.CheckStall;
 import com.woniu.model.Stall;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.woniu.util.Result;
-import com.woniu.vo.CreateStallVo;
 import com.woniu.vo.StallVo;
-
 import java.util.List;
-import com.woniu.vo.StallVo;
-
-import java.util.List;
-import com.woniu.vo.StallVo;
-
-import java.util.List;
+import com.woniu.vo.checkVo;
 
 /**
  * <p>
@@ -67,7 +61,7 @@ public interface StallService extends IService<Stall> {
     /**
      * 新增需要审核的车位信息
      */
-    boolean addCheck(StallVo stallVo);
+    boolean addCheck(CheckStall checkStall);
 
     /**
      * 获取需要审核的车位信息

@@ -5,8 +5,9 @@ import lombok.Data;
 @Data
 public class UserVo1 {
     private String tel;
-    private String checkPass;
-    private String pass;
+    private String password;
     private String code;
+    private String status;
+    private String research;
 
 }

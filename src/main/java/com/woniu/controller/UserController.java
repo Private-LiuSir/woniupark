@@ -104,6 +104,7 @@ public class UserController {
 
             if (boll) {
                 int uid = userService.getVerificationCode(userVo.getReferral());
+                System.out.println(uid+"[][[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[");
                 //从redis查询 如果没查到 自定义返回0
                 if (uid != 0) {
                     //把查询出来的当前用户注册的id存入详情表 并且余额+10
@@ -329,6 +330,21 @@ public class UserController {
         System.out.println("短信验证码: "+authCode);
         userService.noteRedis(user.getTel(),authCode);
         return authCode;
+    }
+
+    //存推荐码
+    @PostMapping("referralCode")
+    public String referralCode(ServletRequest request){
+        //转为httprequest
+        HttpServletRequest httpRequest=(HttpServletRequest)request;
+        //获取请求头中的token
+        String token = httpRequest.getHeader("token");
+        String uid = JWTutil.vertify(token).getClaim("uid").asString();
+        int id = Integer.parseInt(uid);
+        String code = userService.verificationCode(id);
+        System.out.println(code);
+        return code;
+
     }
 
 }

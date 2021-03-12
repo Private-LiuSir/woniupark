@@ -309,5 +309,6 @@ public class StallController {
         return new Result(b);
     }
 
+
 }
 

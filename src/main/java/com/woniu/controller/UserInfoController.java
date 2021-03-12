@@ -5,6 +5,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.woniu.component.JwtToken;
 import com.woniu.model.UserInfo;
 import com.woniu.service.UserInfoService;
+import com.woniu.util.JWTutil;
 import com.woniu.util.JwtUtils;
 import com.woniu.util.Result;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,13 +32,14 @@ public class UserInfoController {
     //根据用户ID 获取用户信息的方法
     @RequestMapping("userInfo")
     public Result getInfo(HttpServletRequest request){
-//        String token = request.getHeader("token");
-//        DecodedJWT decodeToken = JwtUtils.getDecodeToken(token);
-//        //解密出用户ID
-//        String uid = decodeToken.getClaim("uid").asString();
-//        Integer integer = Integer.valueOf(uid);
+        String token = request.getHeader("token");
+
+        DecodedJWT decodeToken = JWTutil.vertify(token);
+        //解密出用户ID
+        String uid = decodeToken.getClaim("uid").asString();
+        Integer integer = Integer.valueOf(uid);
         //获取数库中的信息
-        UserInfo byId = userInfoService.getById(5);
+        UserInfo byId = userInfoService.getById(uid);
         return new Result(byId);
     }
 }

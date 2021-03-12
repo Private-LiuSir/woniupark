@@ -27,7 +27,7 @@ public interface StallMapper extends BaseMapper<Stall> {
     @Select("SELECT s.property_num,s.parking_lot_no,p.plot_address,plot_name,p.plot_id,stall_id " +
             "            FROM t_stall AS s " +
             "             JOIN t_plot AS p " +
-            "             WHERE user_id=1 " +
+            "             WHERE user_id=#{userId} " +
             "             AND s.plot_id=p.plot_id " +
             "            and s.status=1")
     List<StallVo> getStallVos(Integer userId);

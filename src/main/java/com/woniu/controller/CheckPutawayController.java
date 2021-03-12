@@ -36,6 +36,7 @@ public class CheckPutawayController {
      */
     @RequestMapping("getShowCheckPutaway/{userId}")
     public Result getShowCheckPutaway(@PathVariable Integer userId){
+
         List<CheckPutawayVo> putaway = checkPutawayService.getShowCheckPutaway(userId);
         return new Result(putaway);
     }

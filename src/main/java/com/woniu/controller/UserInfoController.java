@@ -4,8 +4,6 @@ package com.woniu.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 import com.woniu.model.UserInfo;
 import com.woniu.service.UserInfoService;
@@ -16,13 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import com.woniu.model.UserInfo;
-import com.woniu.service.UserInfoService;
-import com.woniu.util.Result;
-import com.woniu.vo.PageVo;
-import org.springframework.web.bind.annotation.*;
-
-import javax.annotation.Resource;
 
 /**
  * <p>
@@ -68,26 +59,6 @@ public class UserInfoController {
         UserInfo byId = userInfoService.getById(integer);
         return new Result(byId);
     }
-    @Resource
-    private UserInfoService userInfoService;
-
-    @GetMapping("page")
-    public Result findpage(PageVo pageVo){
-
-        Page<UserInfo> userInfoPage=new Page<>(pageVo.getCurrent(),pageVo.getSize());
-        IPage<UserInfo> page = userInfoService.page(userInfoPage, null);
-
-        return new Result(page);
-    }
-
-    @DeleteMapping("delete/{uid}")
-    public Result deleteUserInfo(@PathVariable Integer uid){
-        userInfoService.removeById(uid);
-
-
-        return new Result(true);
-    }
-
 
 }
 

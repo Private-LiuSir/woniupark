@@ -32,14 +32,14 @@ public class PermissionController {
 
     @RequestMapping("/permissionInfo")
     public Result getPermission(HttpServletRequest request){
-        Integer uid=5;
+        Integer uid=-1;
         //从请求中获取后台保存的JWT字符串
         String token = request.getHeader("token");
         //使用token工具类解析  取出uid
         if(StringUtils.hasLength(token)){
             DecodedJWT vertify = JWTutil.vertify(token);
             //取出ID
-            uid = vertify.getClaim("uid").asInt();
+            uid = Integer.valueOf(vertify.getClaim("uid").asString());
         }
         List<Permission> permissionInfo = permissionService.getPermissionInfo(uid);
         return new Result(permissionInfo);

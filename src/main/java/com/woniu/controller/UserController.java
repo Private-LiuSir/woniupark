@@ -241,10 +241,6 @@ public class UserController {
         return new Result("账号不存在",false);
     }
 
-
-
-
-
     //上传照片
     // 设置固定的日期格式
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");

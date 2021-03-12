@@ -192,7 +192,14 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
             stallVo.setLetterId(Integer.valueOf(hashOperations.get("woniupark:letter:"+id,"出租方ID").toString()));
             stallVo.setPrice(Double.valueOf(hashOperations.get("woniupark:letter:"+id,"单价").toString()));
             stallVo.setParkingLotNo(Integer.valueOf(hashOperations.get("woniupark:letter:"+id,"车位号").toString()));
-            stallVo.setShelfTime(Integer.valueOf(hashOperations.get("woniupark:letter:"+id,"上架时长").toString()));
+            //上架时长
+            Integer existTime = Integer.valueOf(hashOperations.get("woniupark:letter:" + id, "上架时长").toString());
+            //获取上架时间
+            String time= hashOperations.get("woniupark:letter:"+id,"上架时间").toString();
+            //计算已经上架时间
+            Integer integer = DateUtil.maxTime(DateUtil.stringToDate(time), new Date(System.currentTimeMillis()));
+           //设置剩余时间
+            stallVo.setShelfTime(existTime-integer);
             stallVo.setUpstallTime(hashOperations.get("woniupark:letter:"+id,"上架时间").toString());
             stallVo.setStallId(Integer.valueOf(id));
             //添加到集合中

@@ -63,15 +63,15 @@ public interface StallMapper extends BaseMapper<Stall> {
     Integer updatePutaway(Integer putawayId);
 
     //重新上架的接口
-    @Update("update t_putaway set status=1 where stall_id=#{stallId}")
+    @Update("update t_stall set status=2 where stall_id=#{stallId}")
     public int reUpStall(Integer satllId);
 
     //车位被下单的状态
-    @Update("update t_putaway set status=3 where stall_id=#{stallId}")
+    @Update("update t_stall set status=2 where stall_id=#{stallId}")
     public int getStall(Integer stallId);
 
     //下架的方法
-    @Update("update t_putaway set status=2 where stall_id=#{stallId}")
+    @Update("update t_stall set status=1 where stall_id=#{stallId}")
     public int downStall(Integer stallId);
 
 

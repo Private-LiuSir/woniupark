@@ -31,7 +31,6 @@ public class OrderVo {
     private String letterTel;
     //出租客昵称
     private String letterName;
-
     //订单创建时间
     private Date createTime;
     //订单结算时间
@@ -44,7 +43,6 @@ public class OrderVo {
     private Integer status;
     //地址信息
     private String address;
-
     //车位户主昵称  车主联系方式   下单时间  订单价格total   单价money
     private Integer rate;
 }

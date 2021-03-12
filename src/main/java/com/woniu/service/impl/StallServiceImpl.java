@@ -155,6 +155,10 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
             hashMap.put("上架时间",string);
             hashOperations.putAll("woniupark:letter:"+stallVo.getStallId(),hashMap);
 
+            //设置有效期
+
+            stringRedisTemplate.expire("woniupark:letter:"+stallVo.getStallId(),stallVo.getShelfTime(),TimeUnit.HOURS);
+
             //上架完成数据后  把上架了的车位ID存到上架ID集合中
             ListOperations<String, String> listOperations = stringRedisTemplate.opsForList();
             //将新增的车位ID添加到集合中

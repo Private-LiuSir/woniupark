@@ -47,7 +47,6 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
                 });
             }
         });
-        System.out.println(fPermission);
         return fPermission;
     }
 }

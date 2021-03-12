@@ -282,6 +282,13 @@ public class StallController {
         return new Result(integer);
     }
 
+    @RequestMapping("/findUpstall")
+    public Result getUpStall(){
+        List<StallVo> allStall = stallService.findAllStall();
+        Result<List<StallVo>> listResult = new Result<>(allStall);
+        return listResult;
+    }
+
     /**
      * 审核车位表的修改状态为3，添加审核建议
      * @param checkVo

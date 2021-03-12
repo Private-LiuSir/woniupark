@@ -8,4 +8,5 @@ import lombok.Data;
 public class Tadd {
     private String jwtToken;
     private User user;
+    private int roleId;
 }

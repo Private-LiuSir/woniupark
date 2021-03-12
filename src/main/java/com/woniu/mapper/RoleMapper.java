@@ -15,20 +15,21 @@ import java.util.List;
  * @since 2021-03-05
  */
 public interface RoleMapper extends BaseMapper<Role> {
-        @Select("SELECT r.*\n" +
-                "from t_user u\n" +
-                "join t_user_role ur\n" +
-                "on u.user_id=ur.u_id\n" +
-                "join t_role r\n" +
-                "on r.role_id=ur.r_id\n" +
+        @Select("SELECT r.* " +
+                "from t_user u " +
+                "join t_user_role ur " +
+                "on u.user_id=ur.u_id " +
+                "join t_role r " +
+                "on r.role_id=ur.r_id " +
                 "WHERE u.user_id=#{id}")
         public List<Role> findRolesByUId(Integer id);
-        @Select("SELECT r.*\n" +
-                "from t_user u\n" +
-                "join t_user_role ur\n" +
-                "on u.user_id=ur.u_id\n" +
-                "join t_role r\n" +
-                "on r.role_id=ur.r_id\n" +
+
+        @Select("SELECT r.* " +
+                "from t_user u " +
+                "join t_user_role ur " +
+                "on u.user_id=ur.u_id " +
+                "join t_role r " +
+                "on r.role_id=ur.r_id " +
                 "WHERE u.username=#{username}")
         public List<Role> getRole(String username);
 

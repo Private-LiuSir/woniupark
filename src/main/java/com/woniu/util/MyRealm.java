@@ -16,6 +16,7 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.util.StringUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -25,10 +26,7 @@ public class MyRealm extends AuthorizingRealm {
     @Resource
     private RoleMapper roleMapper;
     @Resource
-    private PermissionMapper permissionMapper;
-    @Resource
-    private UserMapper userMapper;
-
+    private StringRedisTemplate stringRedisTemplate;
 
     //表明支持的是自定义token
     @Override
@@ -42,14 +40,29 @@ public class MyRealm extends AuthorizingRealm {
         SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
         //获取令牌
         String token = (String)principalCollection.getPrimaryPrincipal();
-        //解析出用户电话信息
-        String tel = JWTutil.vertify(token).getClaim("tel").asString();
-        //添加用户角色信息
-        List<Role> roles = roleMapper.getRolesByTel(tel);
-        System.out.println(roles);
-        roles.forEach(role ->{
-            info.addRole(role.getRoleName());
-        });
+        //解析出用户id信息
+        String uid = JWTutil.vertify(token).getClaim("uid").asString();
+        //从先判断redis中有无该用户的角色列表
+        Boolean aBoolean = stringRedisTemplate.hasKey("woniupark:roleList:" + uid);
+        //redis中有该用户的角色列表
+        if(aBoolean){
+            List<String> roleName = stringRedisTemplate.opsForList().range("woniupark:roleList:" + uid, 0, -1);
+            //往令牌存数据
+            roleName.forEach(name->{
+                info.addRole(name);
+            });
+        }else{
+            //从数据库获取用户角色列表
+            List<Role> roles = roleMapper.findRolesByUId(Integer.valueOf(uid));
+            //遍历  往redis数据库存
+            roles.forEach(role ->{
+                //往身份令牌存
+                info.addRole(role.getRoleName());
+                //往redis存
+                stringRedisTemplate.opsForList().leftPush("woniupark:roleList:" + uid,role.getRoleName());
+            });
+
+        }
         return info;
     }
 
@@ -60,9 +73,9 @@ public class MyRealm extends AuthorizingRealm {
         //获取解密后的对象
         DecodedJWT vertify = JWTutil.vertify(token);
         //获取用户名
-        String tel = vertify.getClaim("tel").asString();
-        System.out.println("电话："+tel);
-        if(StringUtils.hasLength(tel)){
+        String uid = vertify.getClaim("uid").asString();
+        System.out.println("用户ID："+uid);
+        if(StringUtils.hasLength(uid)){
             return new SimpleAuthenticationInfo(
                     token,
                     token,

@@ -1,10 +1,11 @@
 package com.woniu.exception;
 
 import com.woniu.util.Result;
+import com.woniu.util.StatusCode;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-//@RestControllerAdvice
+@RestControllerAdvice
 public class GlobalException {
 
 

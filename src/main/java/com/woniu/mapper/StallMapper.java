@@ -3,6 +3,7 @@ package com.woniu.mapper;
 import com.woniu.model.Stall;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.woniu.vo.StallVo;
+import io.swagger.models.auth.In;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
@@ -60,5 +61,18 @@ public interface StallMapper extends BaseMapper<Stall> {
      */
     @Update("update t_putaway set status=2 where putaway_id=#{putawayId}")
     Integer updatePutaway(Integer putawayId);
+
+    //重新上架的接口
+    @Update("update t_putaway set status=1 where stall_id=#{stallId}")
+    public int reUpStall(Integer satllId);
+
+    //车位被下单的状态
+    @Update("update t_putaway set status=3 where stall_id=#{stallId}")
+    public int getStall(Integer stallId);
+
+    //下架的方法
+    @Update("update t_putaway set status=2 where stall_id=#{stallId}")
+    public int downStall(Integer stallId);
+
 
 }

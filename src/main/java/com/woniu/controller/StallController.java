@@ -268,6 +268,11 @@ public class StallController {
      */
     @RequestMapping("updatePutaway")
     public Result updatePutaway(@RequestBody CheckPutawayVo checkPutawayVo){
+        //redis删除上架的数据
+        stallService.soutOut(checkPutawayVo);
+
+
+
         System.out.println(checkPutawayVo);
         //修改上架表的状态为2
         Integer integer = stallService.updatePutaway(checkPutawayVo.getPutawayId());

@@ -7,6 +7,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
 public class JWTutil {
 
@@ -17,7 +18,7 @@ public class JWTutil {
 
 
     //获取加密后的JWT字符串
-    public static String createJWT(HashMap<String,String> map){
+    public static String createJWT(Map<String,String> map){
         JWTCreator.Builder builder = JWT.create();
         //添加数据
         map.forEach((k,v)->{

@@ -20,7 +20,7 @@ public class Result<T> {
         this.flag=true;
         this.code=StatusCode.OK;
         this.data=data;
-    }
+}
     public Result(String message){
         this.message=message;
         this.flag=true;
@@ -37,6 +37,12 @@ public class Result<T> {
         this.message=message;
         this.flag=flag;
         this.code=5000;
+    }
+    public Result(String message, boolean flag,Integer code){
+        this.message=message;
+        this.flag=flag;
+        this.code=code;
+        this.data=null;
     }
     public Result(String message, boolean flag, Integer code, T data){
         this.message=message;

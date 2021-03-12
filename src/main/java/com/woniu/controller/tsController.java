@@ -4,8 +4,7 @@ import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
 import com.alipay.api.DefaultAlipayClient;
 import com.alipay.api.request.AlipayTradePagePayRequest;
-import com.woniu.DTO.Result;
-import com.woniu.DTO.StatusCode;
+
 import com.woniu.config.AliPayConfig;
 import com.woniu.mapper.UserInfoMapper;
 import com.woniu.model.UserInfo;

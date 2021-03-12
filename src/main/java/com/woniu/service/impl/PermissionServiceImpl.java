@@ -7,9 +7,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.LinkedHashSet;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * <p>
@@ -26,60 +26,27 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
     private PermissionMapper permissionMapper;
 
     @Override
-    public Set<Permission> findAllPermissions() {
-        List<Permission> permissions = permissionMapper.selectList(null);
-        Set<Permission> needPermissions=new LinkedHashSet<>();
+    public List<Permission> getPermissionInfo(Integer uid) {
 
-        permissions.forEach(first -> {
-            if(first.getLevel()==1){
-                first.setPermission(new LinkedHashSet<Permission>());
-                needPermissions.add(first);
-            }
-        });
-
-        permissions.forEach(second->{
-            needPermissions.forEach(first->{
-                if(second.getPId()==first.getPermissionId()){
-                    second.setPermission(new LinkedHashSet<Permission>());
-                    first.getPermission().add(second);
-                }
-            });
-        });
-
-        permissions.forEach(third->{
-            if(third.getLevel()==3) {
-                needPermissions.forEach(second -> {
-                    second.getPermission().forEach(root -> {
-                        if (third.getPId() == root.getPermissionId()) {
-                            root.getPermission().add(third);
-                        }
-                    });
+        List<Permission> permission = permissionMapper.getPermissionByUid(uid);
+        //创建集合保存1级权限列表
+        ArrayList<Permission> fPermission = new ArrayList<>();
+        //遍历权限权限菜单
+        permission.forEach(p->{
+            //判断是否为1级目录  是就为器创建子级列表
+            if(p.getPId()==0){
+                fPermission.add(p);
+                ArrayList<Permission> permissions = new ArrayList<>();
+                //创建一个集合用于保存子级菜单
+                p.setPermission(permissions);
+                //往新增集合中添加子级
+                permission.forEach(p2->{
+                    if(p2.getPId()==p.getPermissionId()){
+                        permissions.add(p2);
+                    }
                 });
             }
         });
-        return needPermissions;
-    }
-
-    @Override
-    public Set<Permission> queryPermissionByRid(Integer rid) {
-        Set<Permission> needPermissions=new LinkedHashSet<>();
-        Set<Permission> permissions = permissionMapper.queryPermissionByRid(rid);
-        permissions.forEach(permission -> {
-            if (permission.getLevel()==3){
-                needPermissions.add(permission);
-            }
-        });
-
-        return needPermissions;
-    }
-
-    @Override
-    public void deletePermissionAndRoleByRid(Integer rid) {
-        permissionMapper.deletePermissionAndRoleByRid(rid);
-    }
-
-    @Override
-    public void insertRoleAndPermission(Integer rid, Integer pid) {
-        permissionMapper.insertRoleAndPermission(rid,pid);
+        return fPermission;
     }
 }

@@ -16,7 +16,7 @@ import java.util.List;
 public interface RoleService extends IService<Role> {
     public List<Role> findRolesByUId(Integer id);
 
-    public boolean deleteRoleAndUserByUid(Integer uid);
-
-    public boolean insertRoleAndUser(Integer uid, Integer rid);
+//    public boolean deleteRoleAndUserByUid(Integer uid);
+//
+//    public boolean insertRoleAndUser(Integer uid, Integer rid);
 }

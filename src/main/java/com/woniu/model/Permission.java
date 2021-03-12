@@ -3,7 +3,7 @@ package com.woniu.model;
 import com.baomidou.mybatisplus.annotation.*;
 
 import java.io.Serializable;
-import java.util.Set;
+import java.util.List;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -46,7 +46,9 @@ public class Permission implements Serializable {
 
     //表示该字段数据库不存在
     @TableField(exist = false)
-    private Set<Permission> permission;
+    private List<Permission> permission;
+
+
 
 
 }

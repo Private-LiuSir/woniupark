@@ -3,7 +3,7 @@ package com.woniu.service;
 import com.woniu.model.Permission;
 import com.baomidou.mybatisplus.extension.service.IService;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * <p>
@@ -15,12 +15,6 @@ import java.util.Set;
  */
 public interface PermissionService extends IService<Permission> {
 
-    public Set<Permission> findAllPermissions();
-
-    public Set<Permission> queryPermissionByRid(Integer rid);
-
-    public void deletePermissionAndRoleByRid(Integer rid);
-
-    public void insertRoleAndPermission(Integer rid, Integer pid);
+    public List<Permission> getPermissionInfo(Integer uid);
 
 }

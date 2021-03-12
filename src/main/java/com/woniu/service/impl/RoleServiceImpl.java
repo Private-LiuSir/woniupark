@@ -27,16 +27,5 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
         return roleMapper.findRolesByUId(id);
     }
 
-    @Override
-    public boolean deleteRoleAndUserByUid(Integer uid) {
-        roleMapper.deleteRoleAndUserByUid(uid);
-        return true;
 
-    }
-
-    @Override
-    public boolean insertRoleAndUser(Integer uid, Integer rid) {
-        roleMapper.insertRoleAndUser(uid, rid);
-        return true;
-    }
 }

@@ -46,7 +46,7 @@ public interface StallMapper extends BaseMapper<Stall> {
      * @return
      */
     @Select("SELECT p.shelf_time,p.`status`,p.unit_price,p.upstall_time," +
-            "s.address,s.parking_lot_no,s.property_num,t.plot_name,p.putaway_id " +
+            "s.address,s.parking_lot_no,s.property_num,t.plot_name,p.putaway_id,p.stall_id " +
             "FROM t_putaway AS p " +
             "JOIN  t_stall AS s " +
             "ON p.stall_id=s.stall_id " +

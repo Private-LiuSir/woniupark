@@ -28,4 +28,6 @@ public class CheckPutawayVo {
     private Integer letterId;
     //审核建议
     private String cause;
+    //上架表id
+    private Integer putawayId;
 }

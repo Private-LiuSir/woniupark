@@ -52,9 +52,9 @@ public class StallVo {
     private Integer propertyNum;
     //date类型上架时间
     private Date date;
-    //
+    //上架表的单价
     private Double unitPrice;
-    //
+    //上架表id
     private Integer putawayId;
 
 }

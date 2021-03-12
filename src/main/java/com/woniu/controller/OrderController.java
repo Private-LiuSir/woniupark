@@ -3,11 +3,9 @@ package com.woniu.controller;
 
 import com.woniu.service.OrderService;
 import com.woniu.util.Result;
-import com.woniu.vo.OrderVo;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 
-import org.springframework.web.bind.annotation.RestController;
+import com.woniu.vo.OrderVo;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -39,5 +37,10 @@ public class OrderController {
         }
         return new Result("网络繁忙，请刷新后再操作");
     }
+
+
+
+
+
 }
 

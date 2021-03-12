@@ -45,7 +45,7 @@ public class MyRealm extends AuthorizingRealm {
         //解析出用户电话信息
         String tel = JWTutil.vertify(token).getClaim("tel").asString();
         //添加用户角色信息
-        List<Role> roles = roleMapper.getRolesByTel(tel);
+        List<Role> roles = roleMapper.findRolesByTel(tel);
         System.out.println(roles);
         roles.forEach(role ->{
             info.addRole(role.getRoleName());

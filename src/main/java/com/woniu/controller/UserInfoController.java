@@ -2,15 +2,15 @@ package com.woniu.controller;
 
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.woniu.component.JwtToken;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+
 import com.woniu.model.UserInfo;
 import com.woniu.service.UserInfoService;
 import com.woniu.util.JWTutil;
-import com.woniu.util.JwtUtils;
 import com.woniu.util.Result;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import org.springframework.web.bind.annotation.RestController;
+import com.woniu.vo.PageVo;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -24,23 +24,41 @@ import javax.servlet.http.HttpServletRequest;
  * @since 2021-03-05
  */
 @RestController
+@RequestMapping("/userinfo")
+@CrossOrigin
 public class UserInfoController {
-
     @Resource
     private UserInfoService userInfoService;
 
-    //根据用户ID 获取用户信息的方法
-    @RequestMapping("userInfo")
+    @GetMapping("page")
+    public Result findpage(PageVo pageVo){
+
+        Page<UserInfo> userInfoPage=new Page<>(pageVo.getCurrent(),pageVo.getSize());
+        IPage<UserInfo> page = userInfoService.page(userInfoPage, null);
+
+        return new Result(page);
+    }
+
+    @DeleteMapping("delete/{uid}")
+    public Result deleteUserInfo(@PathVariable Integer uid){
+        userInfoService.removeById(uid);
+
+
+        return new Result(true);
+    }
+
+    @RequestMapping("/get")
     public Result getInfo(HttpServletRequest request){
         String token = request.getHeader("token");
+        DecodedJWT vertify = JWTutil.vertify(token);
+        //获取用户ID
+        String uid = vertify.getClaim("uid").asString();
 
-        DecodedJWT decodeToken = JWTutil.vertify(token);
-        //解密出用户ID
-        String uid = decodeToken.getClaim("uid").asString();
         Integer integer = Integer.valueOf(uid);
-        //获取数库中的信息
-        UserInfo byId = userInfoService.getById(uid);
+
+        UserInfo byId = userInfoService.getById(integer);
         return new Result(byId);
     }
+
 }
 

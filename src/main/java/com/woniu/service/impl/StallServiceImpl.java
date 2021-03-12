@@ -7,6 +7,7 @@ import com.woniu.service.StallService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.woniu.util.DateUtil;
 import com.woniu.util.Result;
+import com.woniu.vo.CheckPutawayVo;
 import com.woniu.vo.StallVo;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.HashOperations;
@@ -49,7 +50,7 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
     public void deleteCheck(Integer parkingLotNo) {
         System.out.println(parkingLotNo+"*********************************");
         stringRedisTemplate.delete("woniupark:check:"+parkingLotNo);
-        stringRedisTemplate.opsForList().remove("woniupark:parkingLotNo",0,parkingLotNo.toString());
+        stringRedisTemplate.opsForList().remove("woniupark:parkingLotNo",1,parkingLotNo.toString());
     }
 
     /**
@@ -253,6 +254,11 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
         return new Result(true);
     }
 
+    /**
+     * 下架方法修改数据库
+     * @param putawayId
+     * @return
+     */
     @Override
     public Integer updatePutaway(Integer putawayId) {
 
@@ -341,6 +347,15 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
 
         return stallVos;
     }
-
-
+    /**
+     * 下架删除redis中数据
+     * @param checkPutawayVo
+     * @return
+     */
+    @Override
+    public Integer soutOut(CheckPutawayVo checkPutawayVo) {
+        stringRedisTemplate.delete("woniupark:letter:"+checkPutawayVo.getStallId());
+        stringRedisTemplate.opsForList().remove("woniupark:already-shelvs",1,checkPutawayVo.getStallId().toString());
+        return null;
+    }
 }

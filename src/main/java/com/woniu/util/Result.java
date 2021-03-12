@@ -12,23 +12,24 @@ public class Result<T> {
     public Result(){
         this.message="请求成功";
         this.flag=true;
-        this.code=2000;
+        this.code=StatusCode.OK;
     }
 
     public Result(T data){
         this.message="请求成功";
         this.flag=true;
-        this.code=2000;
+        this.code=StatusCode.OK;
         this.data=data;
-    }
+}
     public Result(String message){
         this.message=message;
         this.flag=true;
-        this.code=2000;
+        this.code=StatusCode.OK;
         this.data=null;
     }
 
     public Result(boolean flag){
+
         this.flag=flag;
     }
 

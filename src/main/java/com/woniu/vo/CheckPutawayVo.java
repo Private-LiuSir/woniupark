@@ -30,4 +30,10 @@ public class CheckPutawayVo {
     private String cause;
     //上架表id
     private Integer putawayId;
+    //
+    private String address;
+    //产权编号
+    private Integer propertyNum;
+    //车位号
+    private Integer parkingLotNo;
 }

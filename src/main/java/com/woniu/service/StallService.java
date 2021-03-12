@@ -4,6 +4,7 @@ import com.woniu.model.CheckStall;
 import com.woniu.model.Stall;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.woniu.util.Result;
+import com.woniu.vo.CheckPutawayVo;
 import com.woniu.vo.StallVo;
 import java.util.List;
 
@@ -94,5 +95,12 @@ public interface StallService extends IService<Stall> {
      */
 
     Integer updatePutaway(Integer putawayId);
+
+    /**
+     * 下架删除redis中数据
+     * @param checkPutawayVo
+     * @return
+     */
+    Integer soutOut(CheckPutawayVo checkPutawayVo);
 
 }

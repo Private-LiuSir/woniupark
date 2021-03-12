@@ -12,10 +12,7 @@ import com.woniu.service.UserInfoService;
 import com.woniu.util.*;
 import com.woniu.model.User;
 import com.woniu.service.UserService;
-import com.woniu.vo.Tadd;
-import com.woniu.vo.UserInfoVo;
-import com.woniu.vo.UserVo;
-import com.woniu.vo.cardYz;
+import com.woniu.vo.*;
 import io.swagger.annotations.Api;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.ibatis.annotations.Param;
@@ -31,7 +28,25 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 
+import com.woniu.model.Plot;
+import com.woniu.model.User;
+import com.woniu.service.PlotService;
+import com.woniu.service.UserService;
+import com.woniu.util.JWTutil;
+import com.woniu.util.Mysalt;
+import com.woniu.vo.Tadd;
+import com.woniu.vo.UserVo;
+import com.woniu.vo.plotVo;
+import com.woniu.vo.wuyeVo;
+import org.apache.shiro.crypto.hash.Md5Hash;
+import org.springframework.util.ObjectUtils;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import java.util.Date;
+import java.util.HashMap;
 import javax.annotation.Resource;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
@@ -45,9 +60,6 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.security.PublicKey;
 import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-
 /**
  * <p>
  *  前端控制器
@@ -63,7 +75,8 @@ public class UserController {
     private UserService userService;
     @Resource
     private UserInfoService userInfoService;
-
+    @Resource
+    private PlotService plotService;
 
     //注册方法
     @PostMapping("register")
@@ -241,6 +254,10 @@ public class UserController {
         return new Result("账号不存在",false);
     }
 
+
+
+
+
     //上传照片
     // 设置固定的日期格式
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -292,12 +309,12 @@ public class UserController {
 
     //实名认证信息
     @PostMapping("userInfo")
-    public Result userInfo(@RequestBody UserInfo userInfo ,ServletRequest request){
+    public Result userInfo(@RequestBody UserInfo userInfo ,ServletRequest request) {
         boolean bo1 = userService.authentication(userInfo.getDl());
         boolean bo2 = userService.authentication(userInfo.getIdcard());
-        if (bo1||bo2){
+        if (bo1 || bo2) {
             //转为httprequest
-            HttpServletRequest httpRequest=(HttpServletRequest)request;
+            HttpServletRequest httpRequest = (HttpServletRequest) request;
             //获取请求头中的token
             String token = httpRequest.getHeader("token");
             String uid = JWTutil.vertify(token).getClaim("uid").asString();
@@ -308,11 +325,11 @@ public class UserController {
             user.setStatus(1);
             //获取jwt里面的id 然后去新增userInfo
             UpdateWrapper<User> wrapper = new UpdateWrapper<>();
-            wrapper.eq("user_id",userid);
-            userService.update(user,wrapper);
-            return new Result("修改成功",true);
-        }else {
-            return new Result("身份认证错误",false);
+            wrapper.eq("user_id", userid);
+            userService.update(user, wrapper);
+            return new Result("修改成功", true);
+        } else {
+            return new Result("身份认证错误", false);
         }
 
 
@@ -327,5 +344,156 @@ public class UserController {
         return authCode;
     }
 
-}
 
+
+
+    @PostMapping("register11")
+    public Result register11(@RequestBody wuyeVo wuyeVo){
+        System.out.println("register==="+wuyeVo);
+//        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+//        queryWrapper.eq("username",userVo.getUsername());
+       // User userDB = userService.getOne(queryWrapper);
+       // if(ObjectUtils.isEmpty(userDB)){
+            User user=new User();
+            String salt = Mysalt.getSalt(8);
+            Md5Hash md5Hash=new Md5Hash(wuyeVo.getPassword(),salt,1024);
+            user.setNickname(wuyeVo.getNickname());
+            user.setPassword(md5Hash.toHex());
+            user.setSalt(salt);
+
+            userService.save(user);
+            Plot plot=new Plot();
+            plot.setPlotAddress(wuyeVo.getPlotAddress());
+            plot.setPlotName(wuyeVo.getPlotName());
+           plotService.save(plot);
+            //if(save){
+                return new Result();
+           // }
+           // return new Result(false, StatusCode.ERRORREGISTER,"注册失败");
+        }
+       // return new Result(false, StatusCode.MUCHNAME,"注册名重复");
+
+
+
+//    @PostMapping("login")
+//    public Result login(@RequestBody UserVo userVo){
+//        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+//        queryWrapper.eq("username",userVo.getUsername());
+//        User userDB = userService.getOne(queryWrapper);
+//
+//        if(!ObjectUtils.isEmpty(userDB)){
+//            Md5Hash md5Hash = new Md5Hash(userVo.getPassword(), userDB.getSalt(), 1024);
+//            String md5Password = md5Hash.toHex();
+//            if(userDB.getPassword().equals(md5Password)){
+//                //登陆成功
+//                HashMap<String, String> map = new HashMap<>();
+//                map.put("username",userVo.getUsername());
+////                map.put("id",userDB.getId().toString());
+//                String jwtToken = JWTutil.createJWT(map);
+//                Tadd tadd=new Tadd();
+//                tadd.setJwtToken(jwtToken);
+//                tadd.setUser(userDB);
+//                return new Result(true, StatusCode.OK,"登陆成功",tadd);
+//            }
+//            return new Result(false, StatusCode.IncorrectCredentials,"凭证错误");
+//        }
+//        return new Result(false, StatusCode.UnknownAccount,"该用户不存在");
+//    }
+
+
+
+
+    //修改密码
+    @PostMapping("password")
+    public Result updatePassword(@RequestBody UserVo2 userVo2) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_id", userVo2.getUserId());
+        User userDB = userService.getOne(queryWrapper);
+//        System.out.println(userDB+"++++++++");
+        //如果不为空
+        if (!ObjectUtils.isEmpty(userDB)) {
+//            System.out.println("jinlail");
+            //前端得到的密码，数据库得到的盐值，散列次数
+            Md5Hash md5Hash = new Md5Hash(userVo2.getPassword1(), userDB.getSalt(), 1024);
+            String md5Password = md5Hash.toHex();
+            if (userDB.getPassword().equals(md5Password)) {
+//                System.out.println("hah");
+                UpdateWrapper<User> wrapper = new UpdateWrapper<>();
+                wrapper.eq("user_id", userDB.getUserId());
+                //设置盐
+                String salt = SaltUtils
+                        .getSalt(8);
+                Md5Hash md5Hash1 = new Md5Hash(userVo2.getPass(), salt, 1024);
+                userDB.setPassword(md5Hash1.toHex());
+                userDB.setSalt(salt);
+                boolean save = userService.update(userDB, wrapper);
+                if (save) {
+                    return new Result("修改成功");
+                }
+                return new Result("修改失败");
+            }
+        }
+
+
+        return new Result("原密码不符");
+}
+    //存推荐码
+    @PostMapping("referralCode")
+    public String referralCode(ServletRequest request){
+        //转为httprequest
+        HttpServletRequest httpRequest=(HttpServletRequest)request;
+        //获取请求头中的token
+        String token = httpRequest.getHeader("token");
+        String uid = JWTutil.vertify(token).getClaim("uid").asString();
+        int id = Integer.parseInt(uid);
+        String code = userService.verificationCode(id);
+        System.out.println(code);
+        return code;
+
+    }
+
+
+
+    //忘记密码
+    @PostMapping("forgetPassword")
+    public Result forgetPassword(@RequestBody UserVo1 userVo1) {
+
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("tel", userVo1.getTel());
+
+        User userDB = userService.getOne(queryWrapper);
+        if (!ObjectUtils.isEmpty(userDB)) {
+            //登陆成功查询角色
+            //调用查询redis的方法 获取验证码
+            String s = userService.gitNoteRedis(userVo1.getTel());
+
+            System.out.println(userVo1.getTel());
+            //如果等于1 代表为null 那么验证码时效或者没有点击验证码按钮
+            if (userDB.getTel().equals(userVo1.getTel())) {
+                if (s.equals(userVo1.getResearch())) {
+                    UpdateWrapper<User> wrapper = new UpdateWrapper<>();
+                    wrapper.eq("user_id", userDB.getUserId());
+                    //设置盐
+                    String salt = SaltUtils
+                            .getSalt(8);
+                    Md5Hash md5Hash = new Md5Hash(userVo1.getPassword(), salt, 1024);
+                    userDB.setPassword(md5Hash.toHex());
+                    userDB.setSalt(salt);
+                    boolean save = userService.update(userDB, wrapper);
+                    if (save) {
+                        return new Result("修改成功");
+                    }
+
+                } else {
+                    return new Result("验证码错误");
+                }
+
+
+            }
+            return new Result("手机号有误");
+
+        }
+        return new Result("修改失败");
+    }
+
+}

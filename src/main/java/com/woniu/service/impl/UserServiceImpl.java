@@ -1,5 +1,6 @@
 package com.woniu.service.impl;
 
+import com.woniu.model.Permission;
 import com.woniu.HttpUtils.IdentityAuthentication;
 import com.woniu.model.Role;
 import com.woniu.model.User;
@@ -18,6 +19,12 @@ import javax.annotation.Resource;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
 /**
  * <p>
  *  服务实现类
@@ -31,14 +38,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Resource
     private RedisTemplate<Object,Object> redisTemplate;
     @Resource
-private UserMapper userMapper;
+    private UserMapper userMapper;
     @Override
     public void role(int uid, int rid) {
         userMapper.role(uid,rid);
     }
 //存推荐码到redis里面
     @Override
-    public void verificationCode(int uid) {
+    public String verificationCode(int uid) {
         RedisSerializer serializer = new StringRedisSerializer();
         redisTemplate.setKeySerializer(serializer);
         //随机生成推荐码
@@ -47,6 +54,7 @@ private UserMapper userMapper;
         redisTemplate.opsForValue().set(salt,uid+"");
         //设置有效时间
         redisTemplate.opsForValue().set(salt,uid,1800, TimeUnit.SECONDS);
+        return salt;
     }
     //从Redis里面取推荐码数据 根据推荐码取用户id
     @Override
@@ -106,4 +114,20 @@ private UserMapper userMapper;
     }
 
 
-}
+
+
+
+
+    @Override
+    public List<Permission> getPermissions(String username, Integer pid) {
+        List<Permission> permissions = userMapper.getPermissions(username,pid);
+        ArrayList<Permission> needPermission=new ArrayList<Permission>();
+        permissions.forEach(permission -> {
+            if(permission.getLevel()==3){
+                needPermission.add(permission);
+            }
+        });
+        return needPermission;
+    }
+    }
+

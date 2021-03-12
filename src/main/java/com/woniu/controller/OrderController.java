@@ -4,6 +4,7 @@ package com.woniu.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.sun.org.apache.xpath.internal.operations.Or;
+import com.woniu.mapper.UserMapper;
 import com.woniu.model.Order;
 import com.woniu.service.OrderService;
 import com.woniu.util.Result;
@@ -41,6 +42,9 @@ public class OrderController {
 
     @Resource
     private OrderService orderService;
+
+    @Resource
+    private UserMapper userMapper;
 
 
 
@@ -89,7 +93,10 @@ public class OrderController {
         //判断请求参数是否有小区ID
         if (!ObjectUtils.isEmpty(orderVo.getPlotId())){
             //小区ID不为空  添加查询条件
-            queryWrapper.eq("plot_id",orderVo.getPlotId());
+            //根据小区用户ID查询关联的小区ID
+            int plotByUserId = userMapper.getPlotByUserId(orderVo.getPlotId());
+            //将查询到的小区ID设置进去
+            queryWrapper.eq("plot_id",plotByUserId);
         }
         //判断请求参数是否有小区ID
         if (!ObjectUtils.isEmpty(orderVo.getStallId())){

@@ -8,9 +8,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.woniu.util.DateUtil;
 import com.woniu.util.Result;
 import com.woniu.vo.StallVo;
-import com.woniu.vo.checkVo;
-import io.lettuce.core.GeoArgs;
-import jdk.nashorn.internal.ir.UnaryNode;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.ListOperations;
@@ -21,7 +18,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.concurrent.TimeUnit;
 
 /**
  * <p>
@@ -233,6 +229,7 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
             //获取时间格式
             String string = DateUtil.dateToString(date);
             hashMap.put("上架时间",string);
+
             hashOperations.putAll("woniupark:letterCheck:"+stallVo.getStallId(),hashMap);
 
             //上架完成数据后  把上架了的车位ID存到上架ID集合中
@@ -251,7 +248,10 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
 
         return putaway;
     }
-
+    /**
+     * 查询所有车位状态
+     * @return
+     */
     @Override
     public List<StallVo> findStall() {
         List<StallVo> stall = stallMapper.findStall();
@@ -290,6 +290,10 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
 
     }
 
+    /**
+     * 获取待审核上架的车位信息
+     * @return
+     */
     @Override
     public List<StallVo> getCheckStalls() {
         //获取目前已将上架的ID列表

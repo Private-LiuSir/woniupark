@@ -18,6 +18,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>
@@ -157,7 +158,7 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
 
             //设置有效期
 
-            stringRedisTemplate.expire("woniupark:letter:"+stallVo.getStallId(),stallVo.getShelfTime(),TimeUnit.HOURS);
+            stringRedisTemplate.expire("woniupark:letter:"+stallVo.getStallId(),stallVo.getShelfTime(), TimeUnit.HOURS);
 
             //上架完成数据后  把上架了的车位ID存到上架ID集合中
             ListOperations<String, String> listOperations = stringRedisTemplate.opsForList();

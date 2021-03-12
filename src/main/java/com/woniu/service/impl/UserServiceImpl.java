@@ -38,7 +38,7 @@ private UserMapper userMapper;
     }
 //存推荐码到redis里面
     @Override
-    public void verificationCode(int uid) {
+    public String verificationCode(int uid) {
         RedisSerializer serializer = new StringRedisSerializer();
         redisTemplate.setKeySerializer(serializer);
         //随机生成推荐码
@@ -47,6 +47,7 @@ private UserMapper userMapper;
         redisTemplate.opsForValue().set(salt,uid+"");
         //设置有效时间
         redisTemplate.opsForValue().set(salt,uid,1800, TimeUnit.SECONDS);
+        return salt;
     }
     //从Redis里面取推荐码数据 根据推荐码取用户id
     @Override

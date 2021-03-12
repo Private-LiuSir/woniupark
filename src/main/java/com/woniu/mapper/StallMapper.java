@@ -27,7 +27,7 @@ public interface StallMapper extends BaseMapper<Stall> {
     @Select("SELECT s.property_num,s.parking_lot_no,p.plot_address,plot_name,p.plot_id,stall_id " +
             "            FROM t_stall AS s " +
             "             JOIN t_plot AS p " +
-            "             WHERE user_id=1 " +
+            "             WHERE user_id=#{userId} " +
             "             AND s.plot_id=p.plot_id " +
             "            and s.status=1")
     List<StallVo> getStallVos(Integer userId);
@@ -46,7 +46,7 @@ public interface StallMapper extends BaseMapper<Stall> {
      * @return
      */
     @Select("SELECT p.shelf_time,p.`status`,p.unit_price,p.upstall_time," +
-            "s.address,s.parking_lot_no,s.property_num,t.plot_name,p.putaway_id " +
+            "s.address,s.parking_lot_no,s.property_num,t.plot_name,p.putaway_id,p.stall_id " +
             "FROM t_putaway AS p " +
             "JOIN  t_stall AS s " +
             "ON p.stall_id=s.stall_id " +
@@ -63,15 +63,15 @@ public interface StallMapper extends BaseMapper<Stall> {
     Integer updatePutaway(Integer putawayId);
 
     //重新上架的接口
-    @Update("update t_putaway set status=1 where stall_id=#{stallId}")
+    @Update("update t_stall set status=2 where stall_id=#{stallId}")
     public int reUpStall(Integer satllId);
 
     //车位被下单的状态
-    @Update("update t_putaway set status=3 where stall_id=#{stallId}")
+    @Update("update t_stall set status=2 where stall_id=#{stallId}")
     public int getStall(Integer stallId);
 
     //下架的方法
-    @Update("update t_putaway set status=2 where stall_id=#{stallId}")
+    @Update("update t_stall set status=1 where stall_id=#{stallId}")
     public int downStall(Integer stallId);
 
 

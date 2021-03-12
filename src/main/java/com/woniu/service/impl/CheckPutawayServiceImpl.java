@@ -4,7 +4,11 @@ import com.woniu.model.CheckPutaway;
 import com.woniu.mapper.CheckPutawayMapper;
 import com.woniu.service.CheckPutawayService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.woniu.vo.CheckPutawayVo;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * <p>
@@ -16,5 +20,11 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class CheckPutawayServiceImpl extends ServiceImpl<CheckPutawayMapper, CheckPutaway> implements CheckPutawayService {
-
+    @Resource
+    private CheckPutawayMapper checkPutawayMapper;
+    @Override
+    public List<CheckPutawayVo> getShowCheckPutaway(Integer userId) {
+        List<CheckPutawayVo> putaway = checkPutawayMapper.getShowCheckPutaway(userId);
+        return putaway;
+    }
 }

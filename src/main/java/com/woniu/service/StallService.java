@@ -4,9 +4,9 @@ import com.woniu.model.CheckStall;
 import com.woniu.model.Stall;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.woniu.util.Result;
+import com.woniu.vo.CheckPutawayVo;
 import com.woniu.vo.StallVo;
 import java.util.List;
-import com.woniu.vo.checkVo;
 
 /**
  * <p>
@@ -88,6 +88,19 @@ public interface StallService extends IService<Stall> {
      */
     List<StallVo> findStall();
 
+    /**
+     * 下架方法，修改上架表状态
+     * @param putawayId
+     * @return
+     */
+
     Integer updatePutaway(Integer putawayId);
+
+    /**
+     * 下架删除redis中数据
+     * @param checkPutawayVo
+     * @return
+     */
+    Integer soutOut(CheckPutawayVo checkPutawayVo);
 
 }

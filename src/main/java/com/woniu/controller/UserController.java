@@ -132,13 +132,13 @@ public class UserController {
                 }
             }
             if (save) {
-                return new Result("注册成功", true);
+                return new Result( "注册成功",true);
             }
-            return new Result("注册失败", false);
+            return new Result("注册失败",false);
 
         } else {
             //如果返回1 代表redis没有查询到数据
-            return new Result("验证码不正确", true);
+            return new Result( "验证码不正确",true);
         }
 
 
@@ -197,28 +197,28 @@ public class UserController {
                 tadd.setUser(userDB);
                 tadd.setRoleId(role.getRoleId());
                 System.out.println(tadd);
-                return new Result("登陆成功", true, 0, tadd);
+                return new Result("登陆成功",true,0,tadd);
             }
-            return new Result("凭证错误", false);
+            return new Result("凭证错误",false);
         }
-        return new Result("该用户不存在", false);
+        return new Result("该用户不存在",false);
     }
 
     //电话登录
     @PostMapping("loginTel")
     public Result loginTel(@RequestBody UserVo userVo) {
         System.out.println(userVo);
-        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("tel", userVo.getTel());
-        User userDB = userService.getOne(queryWrapper);
-        if (!ObjectUtils.isEmpty(userDB)) {
-            //登陆成功查询角色
-            //调用查询redis的方法 获取验证码
-            String s = userService.gitNoteRedis(userVo.getTel());
-            //如果等于1 代表为null 那么验证码时效或者没有点击验证码按钮
-            System.out.println(s + "--------------------");
-            if (s.equals(userVo.getResearch())) {
-                System.out.println("进来了");
+            QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("tel", userVo.getTel());
+            User userDB = userService.getOne(queryWrapper);
+            if (!ObjectUtils.isEmpty(userDB)) {
+                //登陆成功查询角色
+                //调用查询redis的方法 获取验证码
+                String s = userService.gitNoteRedis(userVo.getTel());
+                //如果等于1 代表为null 那么验证码时效或者没有点击验证码按钮
+                System.out.println(s+"--------------------");
+                if (s.equals(userVo.getResearch())) {
+                    System.out.println("进来了");
                 Role role = userService.getRole(userDB.getUserId());
                 HashMap<String, String> map = new HashMap<>();
                 map.put("uid", userDB.getUserId() + "");
@@ -229,14 +229,17 @@ public class UserController {
                 tadd.setRoleId(role.getRoleId());
                 tadd.setUser(userDB);
 
-                return new Result("登陆成功", true, 0, tadd);
-            } else {
-                return new Result("验证码不正确", true);
-            }
+                return new Result( "登陆成功",true,0, tadd);
+            }else{
+                    return new Result( "验证码不正确",true);
+                }
 
         }
-        return new Result("账号不存在", false);
+        return new Result("账号不存在",false);
     }
+
+
+
 
 
     //上传照片
@@ -290,12 +293,12 @@ public class UserController {
 
     //实名认证信息
     @PostMapping("userInfo")
-    public Result userInfo(@RequestBody UserInfo userInfo, ServletRequest request) {
+    public Result userInfo(@RequestBody UserInfo userInfo ,ServletRequest request){
         boolean bo1 = userService.authentication(userInfo.getDl());
         boolean bo2 = userService.authentication(userInfo.getIdcard());
-        if (bo1 || bo2) {
+        if (bo1||bo2){
             //转为httprequest
-            HttpServletRequest httpRequest = (HttpServletRequest) request;
+            HttpServletRequest httpRequest=(HttpServletRequest)request;
             //获取请求头中的token
             String token = httpRequest.getHeader("token");
             String uid = JWTutil.vertify(token).getClaim("uid").asString();
@@ -306,23 +309,22 @@ public class UserController {
             user.setStatus(1);
             //获取jwt里面的id 然后去新增userInfo
             UpdateWrapper<User> wrapper = new UpdateWrapper<>();
-            wrapper.eq("user_id", userid);
-            userService.update(user, wrapper);
-            return new Result("修改成功", true);
-        } else {
-            return new Result("身份认证错误", false);
+            wrapper.eq("user_id",userid);
+            userService.update(user,wrapper);
+            return new Result("修改成功",true);
+        }else {
+            return new Result("身份认证错误",false);
         }
 
 
     }
-
     //获取短信验证
     @PostMapping("authCode")
-    public String authCode(@RequestBody User user) {
+    public String authCode(@RequestBody User user){
 //        String authCode = SendCodeUtil.sendCode(user.getTel());
         String authCode = "000000";
-        System.out.println("短信验证码: " + authCode);
-        userService.noteRedis(user.getTel(), authCode);
+        System.out.println("短信验证码: "+authCode);
+        userService.noteRedis(user.getTel(),authCode);
         return authCode;
     }
 
@@ -355,10 +357,27 @@ public class UserController {
                 }
                 return new Result("修改失败");
             }
-
         }
+
+
         return new Result("原密码不符");
+}
+    //存推荐码
+    @PostMapping("referralCode")
+    public String referralCode(ServletRequest request){
+        //转为httprequest
+        HttpServletRequest httpRequest=(HttpServletRequest)request;
+        //获取请求头中的token
+        String token = httpRequest.getHeader("token");
+        String uid = JWTutil.vertify(token).getClaim("uid").asString();
+        int id = Integer.parseInt(uid);
+        String code = userService.verificationCode(id);
+        System.out.println(code);
+        return code;
+
     }
+
+
 
     //忘记密码
     @PostMapping("forgetPassword")

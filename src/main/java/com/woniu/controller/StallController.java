@@ -7,27 +7,18 @@ import com.woniu.util.DateUtil;
 import com.woniu.vo.*;
 import org.springframework.web.bind.annotation.RequestMapping;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.woniu.mapper.StallMapper;
 import com.woniu.model.Plot;
 import com.woniu.model.Stall;
 import com.woniu.util.Result;
-import org.springframework.boot.autoconfigure.cache.CacheProperties;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import com.woniu.service.StallService;
-import com.woniu.util.Result;
 import com.woniu.vo.StallVo;
-import org.springframework.web.bind.annotation.RequestMapping;
-
 import javax.annotation.Resource;
 import java.util.List;
-
 import org.springframework.web.bind.annotation.RestController;
-import javax.annotation.Resource;
 import java.util.Date;
-import java.util.List;
 
 /**
  * <p>
@@ -184,7 +175,7 @@ public class StallController {
         QueryWrapper<Stall> wrapper1 = new QueryWrapper<>();
         wrapper1.eq("stall_id",checkPutawayVo.getStallId());
         Stall stall = new Stall();
-        stall.setStatus(3);
+        stall.setStatus(1);
         stallService.update(stall,wrapper1);
 
         //修改mysql上架审核表数据
@@ -205,7 +196,7 @@ public class StallController {
      */
     @RequestMapping("up")
     public Result upStall(@RequestBody StallVo stallVo){
-        System.out.println(stallVo);
+
         int i = stallService.upStall(stallVo);
 
         return new Result();
@@ -270,10 +261,29 @@ public class StallController {
         return  new Result(stall);
     }
 
-    @RequestMapping("updatePutaway/{putawayId}")
-    public Result updatePutaway(@PathVariable Integer putawayId){
-        System.out.println(putawayId);
-        Integer integer = stallService.updatePutaway(putawayId);
+    /**
+     * 下架的方法，修改上架表状态和车位表的状态
+     * @param checkPutawayVo
+     * @return
+     */
+    @RequestMapping("updatePutaway")
+    public Result updatePutaway(@RequestBody CheckPutawayVo checkPutawayVo){
+        //redis删除上架的数据
+        stallService.soutOut(checkPutawayVo);
+
+
+
+        System.out.println(checkPutawayVo);
+        //修改上架表的状态为2
+        Integer integer = stallService.updatePutaway(checkPutawayVo.getPutawayId());
+        //修改车位表的状态为1
+        QueryWrapper<Stall> wrapper = new QueryWrapper<>();
+        wrapper.eq("stall_id",checkPutawayVo.getStallId());
+        Stall stall = new Stall();
+        stall.setStatus(1);
+        stallService.update(stall,wrapper);
+
+
         return new Result(integer);
     }
 
@@ -303,6 +313,7 @@ public class StallController {
 
         return new Result(b);
     }
+
 
 }
 

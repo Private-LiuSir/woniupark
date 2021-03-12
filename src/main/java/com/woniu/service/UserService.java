@@ -22,7 +22,7 @@ import java.util.Map;
 public interface UserService extends IService<User> {
     void role(int uid,int rid);
     //存推荐码在redis里面
-    void verificationCode( int uid);
+    String  verificationCode( int uid);
     //从Redis里面取推荐码数据 根据推荐码取用户id
     int getVerificationCode(String code);
     //把图片路径存入session

@@ -7,10 +7,8 @@ import com.woniu.service.StallService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.woniu.util.DateUtil;
 import com.woniu.util.Result;
+import com.woniu.vo.CheckPutawayVo;
 import com.woniu.vo.StallVo;
-import com.woniu.vo.checkVo;
-import io.lettuce.core.GeoArgs;
-import jdk.nashorn.internal.ir.UnaryNode;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.ListOperations;
@@ -52,7 +50,7 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
     public void deleteCheck(Integer parkingLotNo) {
         System.out.println(parkingLotNo+"*********************************");
         stringRedisTemplate.delete("woniupark:check:"+parkingLotNo);
-        stringRedisTemplate.opsForList().remove("woniupark:parkingLotNo",0,parkingLotNo.toString());
+        stringRedisTemplate.opsForList().remove("woniupark:parkingLotNo",1,parkingLotNo.toString());
     }
 
     /**
@@ -161,7 +159,7 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
 
             //设置有效期
 
-            stringRedisTemplate.expire("woniupark:letter:"+stallVo.getStallId(),stallVo.getShelfTime(),TimeUnit.HOURS);
+            stringRedisTemplate.expire("woniupark:letter:"+stallVo.getStallId(),stallVo.getShelfTime(), TimeUnit.HOURS);
 
             //上架完成数据后  把上架了的车位ID存到上架ID集合中
             ListOperations<String, String> listOperations = stringRedisTemplate.opsForList();
@@ -192,7 +190,14 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
             stallVo.setLetterId(Integer.valueOf(hashOperations.get("woniupark:letter:"+id,"出租方ID").toString()));
             stallVo.setPrice(Double.valueOf(hashOperations.get("woniupark:letter:"+id,"单价").toString()));
             stallVo.setParkingLotNo(Integer.valueOf(hashOperations.get("woniupark:letter:"+id,"车位号").toString()));
-            stallVo.setShelfTime(Integer.valueOf(hashOperations.get("woniupark:letter:"+id,"上架时长").toString()));
+            //上架时长
+            Integer existTime = Integer.valueOf(hashOperations.get("woniupark:letter:" + id, "上架时长").toString());
+            //获取上架时间
+            String time= hashOperations.get("woniupark:letter:"+id,"上架时间").toString();
+            //计算已经上架时间
+            Integer integer = DateUtil.maxTime(DateUtil.stringToDate(time), new Date(System.currentTimeMillis()));
+           //设置剩余时间
+            stallVo.setShelfTime(existTime-integer);
             stallVo.setUpstallTime(hashOperations.get("woniupark:letter:"+id,"上架时间").toString());
             stallVo.setStallId(Integer.valueOf(id));
             //添加到集合中
@@ -237,6 +242,7 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
             //获取时间格式
             String string = DateUtil.dateToString(date);
             hashMap.put("上架时间",string);
+
             hashOperations.putAll("woniupark:letterCheck:"+stallVo.getStallId(),hashMap);
 
             //上架完成数据后  把上架了的车位ID存到上架ID集合中
@@ -248,6 +254,11 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
         return new Result(true);
     }
 
+    /**
+     * 下架方法修改数据库
+     * @param putawayId
+     * @return
+     */
     @Override
     public Integer updatePutaway(Integer putawayId) {
 
@@ -255,7 +266,10 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
 
         return putaway;
     }
-
+    /**
+     * 查询所有车位状态
+     * @return
+     */
     @Override
     public List<StallVo> findStall() {
         List<StallVo> stall = stallMapper.findStall();
@@ -294,6 +308,10 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
 
     }
 
+    /**
+     * 获取待审核上架的车位信息
+     * @return
+     */
     @Override
     public List<StallVo> getCheckStalls() {
         //获取目前已将上架的ID列表
@@ -329,6 +347,15 @@ public class StallServiceImpl extends ServiceImpl<StallMapper, Stall> implements
 
         return stallVos;
     }
-
-
+    /**
+     * 下架删除redis中数据
+     * @param checkPutawayVo
+     * @return
+     */
+    @Override
+    public Integer soutOut(CheckPutawayVo checkPutawayVo) {
+        stringRedisTemplate.delete("woniupark:letter:"+checkPutawayVo.getStallId());
+        stringRedisTemplate.opsForList().remove("woniupark:already-shelvs",1,checkPutawayVo.getStallId().toString());
+        return null;
+    }
 }

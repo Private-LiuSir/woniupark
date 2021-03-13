@@ -5,6 +5,8 @@ import com.woniu.model.CheckStall;
 import com.woniu.service.*;
 import com.woniu.util.DateUtil;
 import com.woniu.vo.*;
+import org.apache.shiro.authz.annotation.Logical;
+import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.web.bind.annotation.RequestMapping;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.woniu.model.Plot;
@@ -47,6 +49,7 @@ public class StallController {
      * @param check
      * @return
      */
+    @RequiresRoles(value ="出租客用户")
     @RequestMapping("createStall")
     public Result createStall(@RequestBody CheckStall check){
         //存入redis
@@ -62,6 +65,7 @@ public class StallController {
      * 根据用户id查询所有车位信息
      * @return
      */
+    @RequiresRoles(value ="出租客用户")
     @RequestMapping("getStalls/{letterId}")
     public Result getStalls(@PathVariable Integer letterId){
         List stallVos = stallService.getStallVos(letterId);
@@ -77,6 +81,7 @@ public class StallController {
      * @param parkingLotNo
      * @return
      */
+    @RequiresRoles(value ="出租客用户")
     @RequestMapping("deletStall/{parkingLotNo}")
     public Result deletStall(@PathVariable Integer parkingLotNo){
 
@@ -91,6 +96,7 @@ public class StallController {
      * @param parkingLotNo
      * @return
      */
+
     @RequestMapping("getStall/{parkingLotNo}")
     public Result getStall(@PathVariable Integer parkingLotNo){
 
@@ -110,6 +116,7 @@ public class StallController {
      * @param stallVo
      * @return
      */
+
     @RequestMapping("checkStall")
     public Result checkStall(@RequestBody StallVo stallVo){
 
@@ -206,6 +213,7 @@ public class StallController {
      * 获取待审核的全部车位信息
      * @return
      */
+    @RequiresRoles(value ={"平台普通用户","平台管理员","出租客用户"},logical = Logical.OR)
     @RequestMapping("getCheck")
     public Result getCheck(){
         List<StallVo> checks = stallService.getChecks();
@@ -217,6 +225,7 @@ public class StallController {
      * @param checkVo
      * @return
      */
+    @RequiresRoles(value ={"平台普通用户","平台管理员","出租客用户"},logical = Logical.OR)
     @RequestMapping("addStall")
     public Result addStall(@RequestBody checkVo checkVo){
         QueryWrapper<Plot> wrapper = new QueryWrapper<>();
@@ -245,6 +254,7 @@ public class StallController {
      * 审核车位信息失败后删除该车位在redis中的待审核信息
      * @param parkingLotNo
      */
+    @RequiresRoles(value ={"平台普通用户","平台管理员","出租客用户"},logical = Logical.OR)
     @RequestMapping("deleteCheck/{parkingLotNo}")
     public void deleteCheck(@PathVariable Integer parkingLotNo){
         stallService.deleteCheck(parkingLotNo);
@@ -254,6 +264,7 @@ public class StallController {
      * 根据出租客id查询所有已上架车位信息
      * @return
      */
+    @RequiresRoles(value ={"平台普通用户","平台管理员","出租客用户"},logical = Logical.OR)
     @RequestMapping("getputAways")
     public Result getPutAways(){
         List<StallVo> stall = stallService.findStall();
@@ -266,13 +277,11 @@ public class StallController {
      * @param checkPutawayVo
      * @return
      */
+    @RequiresRoles(value ={"平台普通用户","平台管理员","出租客用户"},logical = Logical.OR)
     @RequestMapping("updatePutaway")
     public Result updatePutaway(@RequestBody CheckPutawayVo checkPutawayVo){
         //redis删除上架的数据
         stallService.soutOut(checkPutawayVo);
-
-
-
         System.out.println(checkPutawayVo);
         //修改上架表的状态为2
         Integer integer = stallService.updatePutaway(checkPutawayVo.getPutawayId());
@@ -282,8 +291,6 @@ public class StallController {
         Stall stall = new Stall();
         stall.setStatus(1);
         stallService.update(stall,wrapper);
-
-
         return new Result(integer);
     }
 
@@ -299,6 +306,7 @@ public class StallController {
      * @param checkVo
      * @return
      */
+    @RequiresRoles(value ={"平台普通用户","平台管理员","出租客用户"},logical = Logical.OR)
     @RequestMapping("updateCheckStall")
     public Result updateCheckStall(@RequestBody checkVo checkVo){
         System.out.println(checkVo);
@@ -313,7 +321,5 @@ public class StallController {
 
         return new Result(b);
     }
-
-
 }
 

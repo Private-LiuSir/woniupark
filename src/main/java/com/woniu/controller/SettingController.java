@@ -2,6 +2,8 @@ package com.woniu.controller;
 
 import com.woniu.util.Result;
 import com.woniu.vo.DistributionVo;
+import org.apache.shiro.authz.annotation.Logical;
+import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +18,8 @@ public class SettingController {
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+
+    @RequiresRoles(value ="平台管理员")
     @RequestMapping("/distribution")
     public Result setDistribution(@RequestBody DistributionVo distribution){
         System.out.println("前台数据："+distribution);
@@ -27,6 +31,8 @@ public class SettingController {
         operations.set("woniupark:commission:property",distribution.getPlotDistribution()+"");
         return new Result(true);
     }
+
+    @RequiresRoles(value ="平台管理员")
     @RequestMapping("/commission")
     public Result getCommission(){
         DistributionVo distributionVo = new DistributionVo();

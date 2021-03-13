@@ -46,6 +46,7 @@ public class MyRealm extends AuthorizingRealm {
         Boolean aBoolean = stringRedisTemplate.hasKey("woniupark:roleList:" + uid);
         //redis中有该用户的角色列表
         if(aBoolean){
+            System.out.println("从redis获取角色列表");
             List<String> roleName = stringRedisTemplate.opsForList().range("woniupark:roleList:" + uid, 0, -1);
             //往令牌存数据
             roleName.forEach(name->{
@@ -53,6 +54,7 @@ public class MyRealm extends AuthorizingRealm {
             });
         }else{
             //从数据库获取用户角色列表
+            System.out.println("从数据库获取角色列表");
             List<Role> roles = roleMapper.findRolesByUId(Integer.valueOf(uid));
             //遍历  往redis数据库存
             roles.forEach(role ->{

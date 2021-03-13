@@ -6,6 +6,8 @@ import com.woniu.model.CheckStall;
 import com.woniu.service.CheckPutawayService;
 import com.woniu.service.CheckStallService;
 import com.woniu.util.Result;
+import org.apache.shiro.authz.annotation.Logical;
+import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -33,6 +35,7 @@ public class CheckStallController {
      * @param userId
      * @return
      */
+
     @RequestMapping("getShowCheckStall/{userId}")
     public Result getShowCheckStall(@PathVariable Integer userId){
         QueryWrapper<CheckStall> wrapper = new QueryWrapper<>();

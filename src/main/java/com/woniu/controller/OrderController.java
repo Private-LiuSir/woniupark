@@ -9,6 +9,8 @@ import com.woniu.model.Order;
 import com.woniu.service.OrderService;
 import com.woniu.util.Result;
 import com.woniu.vo.OrderVo;
+import org.apache.shiro.authz.annotation.Logical;
+import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.data.domain.Page;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -49,7 +51,7 @@ public class OrderController {
 
 
 
-
+    @RequiresRoles(value ="普通用户",logical = Logical.OR)
     @RequestMapping("/createOrder")
     public Result createOrder(@RequestBody OrderVo orderVo){
         System.out.println("前端传入的参数："+orderVo);
@@ -117,6 +119,7 @@ public class OrderController {
     }
 
     //结单的方法  要求传用户用户ID  订单ID  下单时间  单价   结单时间由系统生成
+    @RequiresRoles(value ="普通用户",logical = Logical.OR)
     @RequestMapping("/statement")
     public Result statement(@RequestBody OrderVo orderVo){
         //调用结单的业务层方法
@@ -130,6 +133,7 @@ public class OrderController {
     }
 
     //评价订单的接口   要求传入订单ID  订单的满意度
+    @RequiresRoles(value ="普通用户",logical = Logical.OR)
     @RequestMapping("/rate")
     public Result rateOrder(@RequestBody OrderVo orderVo){
         //创建对象

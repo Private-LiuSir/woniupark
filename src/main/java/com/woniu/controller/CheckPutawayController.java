@@ -7,6 +7,8 @@ import com.woniu.model.CheckStall;
 import com.woniu.service.CheckPutawayService;
 import com.woniu.util.Result;
 import com.woniu.vo.CheckPutawayVo;
+import org.apache.shiro.authz.annotation.Logical;
+import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 

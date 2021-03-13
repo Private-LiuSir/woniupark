@@ -132,6 +132,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                     order.setLetterId(orderVo.getLetterId());
                     //设置订单状态
                     order.setStatus(1);
+                    //
+                    order.setPrice(new BigDecimal(orderVo.getPrice()));
                     //订单的事件使用创建时间  自动生成  金额由结单后核算  结单时间结单时添加
                     int insert = orderMapper.insert(order);
                     //修改上架标的车位状态

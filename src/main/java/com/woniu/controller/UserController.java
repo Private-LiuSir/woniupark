@@ -337,8 +337,8 @@ public class UserController {
     //获取短信验证
     @PostMapping("authCode")
     public String authCode(@RequestBody User user){
-//        String authCode = SendCodeUtil.sendCode(user.getTel());
-        String authCode = "000000";
+        String authCode = SendCodeUtil.sendCode(user.getTel());
+//        String authCode = "000000";
         System.out.println("短信验证码: "+authCode);
         userService.noteRedis(user.getTel(),authCode);
         return authCode;
@@ -403,21 +403,27 @@ public class UserController {
 
 
 
-    //修改密码
     @PostMapping("password")
-    public Result updatePassword(@RequestBody UserVo2 userVo2) {
+    public Result updatePassword(@RequestBody UserVo2 userVo2,ServletRequest request) {
+        //转为httprequest
+        HttpServletRequest httpRequest=(HttpServletRequest)request;
+        //获取请求头中的token
+        String token = httpRequest.getHeader("token");
+        String uid = JWTutil.vertify(token).getClaim("uid").asString();
+        int id = Integer.parseInt(uid);
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("user_id", userVo2.getUserId());
+        queryWrapper.eq("user_id", id);
         User userDB = userService.getOne(queryWrapper);
-//        System.out.println(userDB+"++++++++");
+        System.out.println(userDB+"++++++++");
         //如果不为空
         if (!ObjectUtils.isEmpty(userDB)) {
-//            System.out.println("jinlail");
+            System.out.println("jinlail");
             //前端得到的密码，数据库得到的盐值，散列次数
             Md5Hash md5Hash = new Md5Hash(userVo2.getPassword1(), userDB.getSalt(), 1024);
             String md5Password = md5Hash.toHex();
+
             if (userDB.getPassword().equals(md5Password)) {
-//                System.out.println("hah");
+                System.out.println("hah");
                 UpdateWrapper<User> wrapper = new UpdateWrapper<>();
                 wrapper.eq("user_id", userDB.getUserId());
                 //设置盐
@@ -433,10 +439,8 @@ public class UserController {
                 return new Result("修改失败");
             }
         }
-
-
         return new Result("原密码不符");
-}
+    }
     //存推荐码
     @PostMapping("referralCode")
     public String referralCode(ServletRequest request){
